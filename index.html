@@ -1,0 +1,204 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pyrgos v AO Ag. Clip Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#eef0ee;--surface:#fff;--fg:#17201c;--muted:#5c6862;--line:#d5dbd7;--accent:#8a1538;--chip:#e6eae7;
+--display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;--body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111614;--surface:#18201c;--fg:#e7ece9;--muted:#93a19a;--line:#2a3530;--chip:#212b26;--accent:#d24a72;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111614;--surface:#18201c;--fg:#e7ece9;--muted:#93a19a;--line:#2a3530;--chip:#212b26;--accent:#d24a72;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;padding:16px 16px 32px}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px}
+.comp{font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--muted);font-weight:600}
+.score{font-family:var(--display);font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1;display:flex;gap:.35em;align-items:baseline;flex-wrap:wrap}
+.score .n{font-variant-numeric:tabular-nums}.score .q{color:var(--accent)}.score .v{color:var(--muted);font-size:.6em}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
+.stage,.aside{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
+.vid{background:#000;position:relative}.vid iframe{display:block;width:100%;aspect-ratio:16/9;max-height:66vh;border:0;background:#000}.vid:fullscreen{display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}.vid:fullscreen iframe{max-height:100vh;height:100vh;width:100vw;aspect-ratio:auto}.vid:fullscreen .now{font-size:20px!important;bottom:120px;left:24px;max-width:60%}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:320px;color:#cfd8d3;text-align:center;padding:20px}.drop b{font-family:var(--display);font-size:22px;letter-spacing:.04em}
+.vwrap{position:relative}.vid:fullscreen .vwrap{width:100vw;height:100vh}
+.now{position:absolute;left:12px;bottom:14px;max-width:62%;max-height:60vh;overflow:hidden;display:flex;flex-direction:column;gap:4px;background:none!important;border:0!important;padding:0!important;font-size:14px!important;padding:5px 10px;border-radius:5px;background:rgba(10,12,11,.74);border-left:3px solid var(--accent);color:#fff;font-size:12.5px;pointer-events:none}
+.ticker{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;min-height:36px;align-items:center}
+.clock{font-family:var(--mono);font-size:14px;white-space:nowrap}.evt{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.evt b{color:var(--fg)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pad{padding:10px 12px}
+button,select{font:inherit;font-size:13px;color:var(--fg);background:var(--chip);border:1px solid var(--line);border-radius:4px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;padding:8px 16px}
+.chip{display:inline-flex;gap:6px;align-items:center}.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}.chip small{opacity:.7;font-family:var(--mono)}
+.lbl{font-size:12px;color:var(--muted)}
+.cats{border-top:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.aside h3{margin:0;padding:10px 12px;font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.pane{padding:10px 12px;max-height:700px;overflow:auto}
+.clip{display:block;width:100%;text-align:left;border:1px solid var(--line);background:transparent;border-radius:5px;margin-bottom:6px;padding:7px 9px}
+.clip.on{box-shadow:inset 0 0 0 2px var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.clip .h{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:12.5px}.clip .m{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:2px}.clip .n{font-size:12.5px;margin-top:3px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.clip{padding:0}.clip .main{display:block;width:100%;text-align:left;background:transparent;border:0;padding:7px 9px 4px;color:var(--fg)}
+.trim{display:flex;gap:6px;align-items:center;padding:2px 9px 7px;flex-wrap:wrap}.trim button{padding:2px 8px;font-size:12px;font-family:var(--mono)}
+.seg{display:flex;gap:6px}.seg button{font-family:var(--display);text-transform:uppercase;letter-spacing:.05em;font-weight:600;font-size:14px;padding:5px 10px}.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.fsbar{display:none;position:absolute;left:0;right:0;top:0;padding:12px 16px;gap:8px;flex-wrap:wrap;background:linear-gradient(rgba(0,0,0,.65),transparent);z-index:3;transition:opacity .3s}
+.fsbar button{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.3)}.fsbar button[aria-pressed="true"]{background:#fff;color:#111}
+.vid:fullscreen .fsbar{display:flex}.vid:fullscreen .fsbar.hide{opacity:0;pointer-events:none}
+.tp .scrub{flex:1 1 100%;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}.tp .scrub input{flex:1;accent-color:var(--accent)}.vid:fullscreen .tp .scrub{color:#fff}
+.tp .big{min-width:150px;font-weight:600;padding:8px 14px}
+.off input{width:70px;font-family:var(--mono)}
+.tp{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;padding:8px 10px;background:var(--surface);border-top:1px solid var(--line)}.tp .sp{flex:1}
+.tp button{min-width:64px}.tp button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.vid:fullscreen .tp{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.65));border:0;z-index:3;transition:opacity .3s}
+.vid:fullscreen .tp button{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.3)}.vid:fullscreen .tp.hide{opacity:0;pointer-events:none}
+.now>div{padding:5px 10px;border-radius:5px;background:rgba(10,12,11,.78);border-left:4px solid var(--c,#8a948f);color:#fff}.now>div b{color:var(--c,#fff)}
+.empty{color:var(--muted);padding:20px 4px}
+</style></head><body>
+<div class="wrap">
+<header><div><div class="comp">Greek Women's A1 · 2026/27 · Sun 15 Nov</div>
+<div class="score"><span class="q">Pyrgos AFC</span><span class="n">1</span><span class="v">–</span><span class="n">2</span><span>AO Ag. Paraskevi</span></div><div class="comp" style="margin-top:6px">Full time · Pyrgos lost 1–2</div></div>
+<div class="row"><button id="theme">◐ Theme</button></div></header>
+<div class="grid">
+ <div class="stage">
+  <div class="ticker"><div class="clock" id="clock">—</div><div class="evt" id="evt"></div></div>
+  <div class="vid" id="vid">
+   <div class="vwrap"><iframe id="yt" allow="autoplay; encrypted-media; fullscreen" allowfullscreen title="Match video"></iframe><div class="now" id="now" hidden></div></div>
+   <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
+    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-m="rew" title="Fast rewind">⏪</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-m="ff" title="Fast forward 2×">⏩</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><span class="sp"></span><button data-s="-10">−10s</button><button data-s="10">+10s</button><button data-f="-1">◀| Frame</button><button data-f="1">Frame |▶</button><button id="txt" aria-pressed="true" title="Show or hide the clip text">Text: On</button><button id="fsb" title="Full screen">⛶</button></div>
+   <div class="fsbar" id="fsbar"><button data-o="time" id="fOT">Clips in Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
+  </div>
+  <div class="pad row">
+   <button class="primary" id="playAll">▶ Play</button>
+   <button id="stop">■ Stop</button><button id="prev">◀ Prev clip</button><button id="next">Next clip ▶</button>
+   <span class="lbl" id="qinfo"></span>
+   <span style="flex:1"></span>
+   <span class="lbl">Lead-in</span><select id="pre"><option value="0" selected>0s</option><option value="3">3s</option><option value="5">5s</option><option value="10">10s</option></select>
+   <select id="rate"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+  </div>
+  <div class="cats off" hidden><div class="row"><span class="lbl"><b>Sync to this video</b> — the clip times came from a different recording, so line them up once:</span></div>
+   <div class="row"><button id="kick">Set: this moment = first clip (kickoff)</button><span class="lbl">Offset</span><button id="om">−1s</button><input type="text" id="off" aria-label="Offset seconds"><button id="op">+1s</button><span class="lbl" id="offinfo"></span></div></div>
+  <div class="cats"><div class="row" id="quick"></div><div class="row" id="cats"></div></div>
+ </div>
+ <div class="aside"><h3><span class="seg"><button id="oT" aria-pressed="false">Clips in Order</button><button id="oK" aria-pressed="false">Tactical Order</button></span><span class="lbl" id="count"></span></h3><div class="pane" id="pane"></div></div>
+</div>
+</div>
+<script>
+const CL=[{"r":"ASP - Good","s":871.7,"e":885.7,"n":"Good strike but this kickoff doesn’t make sense for your team. This is what good pressing teams do"},{"r":"IP - Good","s":884.0,"e":898.0,"n":"Clever pass, good creativity straight away"},{"r":"IP - Good","s":930.5,"e":944.5,"n":"Good idea again, good disguise on the pass\nEve not sharp enough"},{"r":"IP - Bad","s":945.5,"e":959.5,"n":"Too many touches, some passes need to be simple for you to be able to do the penetrating ones"},{"r":"OOP - Good","s":953.9,"e":973.2,"n":"Good defending but you’re still quite square, you’re giving her both sides\nStrong challenge"},{"r":"DT - Good","s":1107.2,"e":1121.2,"n":"Good reaction and pace"},{"r":"IP - Good","s":1162.8,"e":1176.8,"n":""},{"r":"DT - Bad","s":1165.3,"e":1179.3,"n":"Didn’t need to try and win it, just force it backwards so she can’t turn"},{"r":"Other","s":1205.1,"e":1235.1,"n":"Bad defending and goalkeeping"},{"r":"DSP - Good","s":1216.2,"e":1230.2,"n":"Good clearance under pressure"},{"r":"OOP - Good","s":1303.3,"e":1317.3,"n":"Really good decision to drop here"},{"r":"OOP - Good","s":1327.5,"e":1341.5,"n":"Good angle to the press"},{"r":"IP - Good","s":1362.8,"e":1376.8,"n":"Great run into the box, terrible from her"},{"r":"IP - Good","s":1477.4,"e":1491.4,"n":"Good idea to play this on one, she defended well"},{"r":"IP - Bad","s":1498.9,"e":1512.9,"n":"Either this was a bad decision or bad execution but it wasn’t on"},{"r":"OOP - Good","s":1517.5,"e":1531.5,"n":"Good recovery"},{"r":"OOP - Bad","s":1524.8,"e":1538.8,"n":"Didn’t need to dive in here"},{"r":"OOP - Good","s":1639.9,"e":1653.9,"n":"Good pressure here"},{"r":"OOP - Bad","s":1681.3,"e":1695.3,"n":"No reason to stick your arm out here, the danger isn’t worth getting yellow carded"},{"r":"Other","s":1683.8,"e":1713.8,"n":"TERRIBLE defending and AWFUL goalkeeping"},{"r":"ASP - Good","s":1740.5,"e":1754.5,"n":"This is better going this side, it’s more dangerous with your right"},{"r":"OOP - Good","s":1754.4,"e":1768.4,"n":"Good aggression, teammte should win this"},{"r":"IP - Good","s":1789.6,"e":1807.0,"n":"Great movement, 1st and 2nd touch and excellent finish"},{"r":"IP - Good","s":1906.1,"e":1920.1,"n":"Great run again, if you could’ve got it out of your feet faster  on 1st touch you couldve shot or crossed"},{"r":"ASP - Good","s":1946.3,"e":1960.3,"n":"Obviously this is your job but taking you out of the middle and kicking it straight to the GK is just stupid"},{"r":"IP - Good","s":1968.2,"e":1982.2,"n":"This is a good 2nd movement once you see its going over you"},{"r":"OOP - Good","s":2076.4,"e":2090.4,"n":""},{"r":"OOP - Good","s":2133.5,"e":2147.5,"n":""},{"r":"Other","s":2198.7,"e":2228.7,"n":"Your right back often does this, has no idea where here player is"},{"r":"IP - Good","s":2230.6,"e":2244.6,"n":"Good movement again"},{"r":"IP - Bad","s":2300.7,"e":2314.7,"n":"Very difficult but could you aim the header better, or let it run across you for the winger?"},{"r":"IP - Good","s":2320.7,"e":2334.7,"n":"1st time dropping in the game, good timing"},{"r":"OOP - Good","s":2376.4,"e":2390.4,"n":"Good pressure"},{"r":"IP - Good","s":2426.9,"e":2447.4,"n":"This is fine, but you’re actually in a lot of space here. Could you turn and play? \nGood pace on this pass, she should take a touch and cross"},{"r":"OOP - Good","s":2509.4,"e":2523.4,"n":"Good challenge"},{"r":"IP - Good","s":2545.1,"e":2559.1,"n":"These passes are the little things that open up the game that people don’t notice"},{"r":"OOP - Good","s":2558.0,"e":2572.0,"n":"Good pressure"},{"r":"IP - Good","s":2602.8,"e":2616.8,"n":"Good block"},{"r":"IP - Good","s":2662.2,"e":2676.2,"n":""},{"r":"IP - Good","s":2715.3,"e":2729.3,"n":"clever pass"},{"r":"Other","s":2750.8,"e":2780.8,"n":"What a terrible dive"},{"r":"IP - Good","s":2880.5,"e":2894.5,"n":"Good run and carrying on to press"},{"r":"IP - Good","s":2930.9,"e":2955.2,"n":"I can tell you have no options at all"},{"r":"IP - Good","s":2967.2,"e":2981.2,"n":""},{"r":"IP - Good","s":2989.1,"e":3012.5,"n":""},{"r":"OOP - Good","s":3063.4,"e":3077.4,"n":""},{"r":"IP - Good","s":3100.5,"e":3114.5,"n":"Opening up the pitch well"},{"r":"IP - Good","s":3162.0,"e":3178.2,"n":"nice play between the lines\nAnother good run into the box"},{"r":"IP - Good","s":3206.8,"e":3220.8,"n":"This first touch is great, makes the pass easy to open up"},{"r":"Other","s":3402.1,"e":3432.1,"n":"How does she lose this?"},{"r":"OOP - Good","s":3587.9,"e":3601.9,"n":"Good recovery, these little runs really help"},{"r":"OOP - Good","s":4727.9,"e":4741.9,"n":"Always good to put someone on the floor"},{"r":"IP - Good","s":4760.2,"e":4774.2,"n":""},{"r":"IP - Good","s":4911.2,"e":4925.2,"n":"Awkward bounce, not much you can do, plus bad pass"},{"r":"Other","s":5213.4,"e":5243.4,"n":"Terrible defending by the centre backs and right back"},{"r":"ASP - Good","s":5279.6,"e":5303.8,"n":"Much better, just do this every time\nCould you shoot?"},{"r":"IP - Good","s":5443.4,"e":5457.4,"n":"Looks like this was good"},{"r":"IP - Good","s":5682.3,"e":5696.3,"n":"Good control anyway"},{"r":"IP - Good","s":5737.8,"e":5751.8,"n":"Good control again"},{"r":"IP - Good","s":5840.5,"e":5854.5,"n":"Good timing into the box again"},{"r":"IP - Good","s":5995.9,"e":6009.9,"n":"This looks poor by her?"},{"r":"IP - Bad","s":6019.3,"e":6033.3,"n":"bad touch"},{"r":"OOP - Good","s":6185.3,"e":6199.3,"n":"Good scanning"},{"r":"IP - Good","s":6295.9,"e":6311.7,"n":"This is really nice skill and great strength\nIts a good cross but could you get your head up to see no one is there?"},{"r":"IP - Bad","s":6447,"e":6461,"n":"The ball isn’t in the right position to shoot from here. Its to the side of you not in front so its very difficult to get your foot around it \nFirst or second touch should be forward"},{"r":"IP - Good","s":6512.5,"e":6526.5,"n":"This is excellent 9 play"},{"r":"OOP - Good","s":6567.9,"e":6581.9,"n":""},{"r":"IP - Good","s":6621.4,"e":6635.4,"n":"Nice no look pass"},{"r":"IP - Good","s":6759.8,"e":6773.8,"n":"Good set back"},{"r":"OOP - Good","s":6778.3,"e":6798.5,"n":"Good change of angle at the end and great idea for a pass"},{"r":"Other","s":6907.5,"e":6937.5,"n":""},{"r":"IP - Good","s":7133.4,"e":7149.0,"n":"Really good pass on first touch like this and good breaking into the box"},{"r":"IP - Good","s":7290.8,"e":7320.3,"n":"Good demanding here\nGreat switch and breaking into box (getting good at this)"},{"r":"OOP - Good","s":7359.7,"e":7373.7,"n":"Good pace and decision to pull out"},{"r":"IP - Good","s":7413.3,"e":7427.3,"n":"Good strength under pressure"},{"r":"IP - Bad","s":7613.3,"e":7630.4,"n":"Not the best option even if you didn’t slip"}];
+const COL={IP:"#2a8bd6",OOP:"#d97a1f",ASP:"#8a5bd6",DSP:"#14a5a0",DT:"#d6a21f",Other:"#8a948f"};
+const kind=r=>r.split(" - ")[0],isG=r=>/Good$/.test(r),isB=r=>/Bad$/.test(r);
+const $=id=>document.getElementById(id);
+const YT_ID="d-_KNexWXfw";
+let OFF=0;
+// Player shim: gives the YouTube iframe the same small API the page used for a <video> element
+const ytf=$("yt"),L={};let got=false;
+const cmd=(f,a)=>{try{ytf.contentWindow.postMessage(JSON.stringify({event:"command",func:f,args:a||[]}),"*")}catch(e){}};
+const emit=n=>(L[n]||[]).forEach(f=>f());
+const v={hidden:false,_t:0,_p:true,_r:1,_d:0,_l:performance.now(),
+ get currentTime(){return this._p?this._t:this._t+(performance.now()-this._l)/1000*this._r},
+ set currentTime(x){this._t=Math.max(0,x);this._l=performance.now();cmd("seekTo",[this._t,true])},
+ get paused(){return this._p},get duration(){return this._d},
+ get playbackRate(){return this._r},set playbackRate(r){this._r=r;cmd("setPlaybackRate",[r])},
+ play(){this._l=performance.now();cmd("playVideo");if(this._p){this._p=false;emit("play")}},
+ pause(){const t=this.currentTime;cmd("pauseVideo");this._t=t;if(!this._p){this._p=true;emit("pause")}},
+ addEventListener(n,f){(L[n]=L[n]||[]).push(f)}};
+ytf.src="https://www.youtube.com/embed/"+YT_ID+"?enablejsapi=1&controls=0&fs=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1"+(location.protocol.startsWith("http")?"&origin="+encodeURIComponent(location.origin):"");
+const hand=()=>{try{ytf.contentWindow.postMessage(JSON.stringify({event:"listening",id:"clips",channel:"widget"}),"*");cmd("addEventListener",["onStateChange"])}catch(e){}};
+ytf.addEventListener("load",()=>{let n=0;hand();const h=setInterval(()=>{if(got||++n>20)clearInterval(h);else hand()},500)});
+window.addEventListener("message",e=>{if(e.source!==ytf.contentWindow)return;let d;try{d=typeof e.data==="string"?JSON.parse(e.data):e.data}catch(x){return}if(!d)return;got=true;
+ const i=d.info&&typeof d.info==="object"?d.info:{};if(d.event==="onStateChange"&&typeof d.info==="number")i.playerState=d.info;
+ if(typeof i.duration==="number"&&i.duration>0)v._d=i.duration;
+ if(typeof i.currentTime==="number"){v._t=i.currentTime;v._l=performance.now()}
+ if(typeof i.playbackRate==="number")v._r=i.playbackRate;
+ if(typeof i.playerState==="number"){const pl=i.playerState===1||i.playerState===3;if(pl&&v._p){v._p=false;v._l=performance.now();emit("play")}else if(!pl&&!v._p){v._p=true;emit("pause")}if(i.playerState===0)emit("ended")}});
+setInterval(()=>emit("timeupdate"),200);
+const KO0=["IP","AT","OOP","DT","ASP","DSP","Other"],tk0=r=>{let k=KO0.indexOf(kind(r));if(k<0)k=6;return k*2+(/Bad$/.test(r)?1:0)};
+const ROWS=[...new Set(CL.map(c=>c.r))].sort((a,b)=>tk0(a)-tk0(b));
+const sel=new Set();let ordPick=false,showText=true;let queue=[],qi=-1,playing=false;
+const mm=t=>{t=Math.max(0,t);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60);return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(s).padStart(2,"0")};
+const col=r=>COL[kind(r)]||"#888";
+let adj={};try{adj=JSON.parse(localStorage.getItem("clipAdj")||"{}")}catch(e){}
+const saveAdj=()=>{try{localStorage.setItem("clipAdj",JSON.stringify(adj))}catch(e){}};
+let order="time";const KO=["IP","AT","OOP","DT","ASP","DSP","Other"];
+const tkey=r=>{let k=KO.indexOf(kind(r));if(k<0)k=KO.length-1;return k*2+(isB(r)?1:0)};
+const list=()=>CL.map((c,i)=>({...c,i,s:Math.max(0,c.s+OFF+((adj[i]||{}).s||0)),e:c.e+OFF+((adj[i]||{}).e||0)})).filter(c=>sel.has(c.r)).sort((a,b)=>order==="tactical"?(tkey(a.r)-tkey(b.r))||(a.s-b.s):a.s-b.s);
+function rebuild(){const cur=queue[qi]?queue[qi].i:null;queue=qi>=0?list():[];if(cur!=null)qi=queue.findIndex(c=>c.i===cur)}
+function trim(i,k,d){const a=adj[i]=adj[i]||{s:0,e:0};a[k]=(a[k]||0)+d;if(!a.s&&!a.e)delete adj[i];saveAdj();rebuild();
+ if(k==="s"&&!v.hidden){const c=list().find(c=>c.i===i);v.currentTime=Math.max(0,c.s-(+$("pre").value))}render()}
+const trims=c=>{const a=adj[c.i]||{},f=n=>n?(n>0?"+":"")+n+"s":"0";return `<div class="trim"><span class="lbl">Start</span><button data-t="${c.i}|s|-5">−5s</button><button data-t="${c.i}|s|5">+5s</button><span class="lbl">End</span><button data-t="${c.i}|e|-5">−5s</button><button data-t="${c.i}|e|5">+5s</button>${(a.s||a.e)?`<button data-t="${c.i}|r|0">Reset</button><span class="lbl">(${f(a.s)} / ${f(a.e)})</span>`:""}</div>`};
+function buildChips(){
+ $("quick").innerHTML=`<span class="lbl">Show</span><button class="chip" data-q="all">All</button><button class="chip" data-q="good">All Good</button><button class="chip" data-q="bad">All Bad</button><button class="chip" data-q="none">None</button>`;
+ $("cats").innerHTML=ROWS.map(r=>{const n=CL.filter(c=>c.r===r).length;return `<button class="chip" data-r="${r}" aria-pressed="${sel.has(r)}"><i style="background:${col(r)}"></i>${r}<small>${n}</small></button>`}).join("")}
+function render(){buildChips();const L=list();$("count").textContent=L.length+" of "+CL.length;
+ $("pane").innerHTML=L.length?L.map(c=>`<div class="clip ${queue[qi]&&queue[qi].i===c.i?"on":""}" style="border-left:4px solid ${gc(c.r)}"><button class="main" data-i="${c.i}"><div class="h"><span><span class="dot" style="background:${col(c.r)}"></span>${c.r}</span><span class="lbl">${mm(c.s)}–${mm(c.e)}</span></div>${c.n?`<div class="n">${c.n.replace(/</g,"&lt;")}</div>`:""}</button>${trims(c)}</div>`).join(""):`<div class="empty">Choose <b>Clips in Order</b> or <b>Tactical Order</b> above to start playing, or pick categories below.</div>`;
+ const on=$("pane").querySelector(".on");if(on)on.scrollIntoView({block:"nearest"});
+ $("qinfo").textContent=playing?`Clip ${qi+1} of ${queue.length}`:"";
+ $("playAll").textContent=playing?"❚❚ Pause":"▶ Play";$("fPlay").textContent=$("playAll").textContent;$("fOT").setAttribute("aria-pressed",ordPick&&order==="time");$("fOK").setAttribute("aria-pressed",ordPick&&order==="tactical");$("oT").setAttribute("aria-pressed",ordPick&&order==="time");$("oK").setAttribute("aria-pressed",ordPick&&order==="tactical")}
+function playAt(k){if(k<0||k>=queue.length){return stopQ()}qi=k;const c=queue[k];
+ v.currentTime=Math.max(0,c.s-(+$("pre").value));v.play();playing=true;
+ updateNow(true);render()}
+function stopQ(){playing=false;qi=-1;v.pause();$("now").hidden=true;render()}
+function start(fromId){queue=list();if(!queue.length)return;let k=0;if(fromId!=null){k=queue.findIndex(c=>c.i===fromId);if(k<0)k=0}playAt(k)}
+const gc=r=>isG(r)?"#34c26f":isB(r)?"#f0605a":"#93a19a";
+let nowKey="";
+
+const esc=s=>s.replace(/</g,"&lt;");
+function updateNow(force){if(!showText||!playing||qi<0){$("now").hidden=true;nowKey="";return}
+ const t=v.currentTime;let act=queue.filter(c=>t>=c.s-.05&&t<=c.e&&(order!=="tactical"||c.r===queue[qi].r));if(!act.length)act=[queue[qi]];
+ const key=act.map(c=>c.i).join(",");if(key===nowKey&&!force)return;nowKey=key;
+ $("now").hidden=false;$("now").innerHTML=act.map(c=>`<div style="--c:${gc(c.r)}"><b>${c.r}</b>${c.n?" — "+esc(c.n):""}</div>`).join("")}
+function advance(){const t=v.currentTime,lead=+$("pre").value;let k=qi+1;
+ const same=c=>order==="time"||c.r===queue[qi].r;
+ while(k<queue.length&&queue[k].e<=t&&same(queue[k]))k++;               // fully covered by footage already played
+ if(k>=queue.length)return stopQ();
+ if(same(queue[k])&&t>=queue[k].s-lead&&t<queue[k].e){qi=k;updateNow(true);render()}   // overlaps / adjoins: keep playing, no replay
+ else playAt(k)}
+v.addEventListener("timeupdate",()=>{$("clock").textContent="VIDEO "+mm(v.currentTime);
+ if(playing&&qi>=0){if(v.currentTime>=queue[qi].e)advance();else updateNow()}});
+v.addEventListener("ended",()=>{if(playing)stopQ()});
+v.addEventListener("pause",()=>{});
+$("playAll").onclick=()=>{if(v.hidden)return;if(!list().length){v.paused?v.play():v.pause();return}if(playing){playing=false;v.pause();render()}else if(qi>=0&&queue.length){playing=true;v.play();render()}else start()};
+$("stop").onclick=stopQ;
+$("next").onclick=()=>{if(v.hidden)return;if(!queue.length||qi<0){queue=list();const k=queue.findIndex(c=>c.s-(+$("pre").value)>v.currentTime+.5);playAt(k<0?0:k)}else playAt(qi+1)};
+$("prev").onclick=()=>{if(v.hidden)return;if(!queue.length||qi<0){queue=list();let k=-1;queue.forEach((c,j)=>{if(c.s-(+$("pre").value)<v.currentTime-1.5)k=j});playAt(Math.max(0,k))}else playAt(Math.max(0,qi-1))};
+const tfs=()=>document.fullscreenElement?document.exitFullscreen():$("vid").requestFullscreen&&$("vid").requestFullscreen();
+v.addEventListener("dblclick",e=>{e.preventDefault();tfs()});
+const fb=$("fsbar"),tpb=$("tp");let ft;const wake=()=>{fb.classList.remove("hide");tpb.classList.remove("hide");clearTimeout(ft);ft=setTimeout(()=>{if(document.fullscreenElement&&!v.paused){fb.classList.add("hide");tpb.classList.add("hide")}},3000)};
+$("vid").addEventListener("mousemove",wake);$("vid").addEventListener("click",wake);document.addEventListener("fullscreenchange",wake);
+fb.onclick=e=>{const b=e.target.closest("button");if(!b)return;wake();if(b.dataset.o)setOrder(b.dataset.o);else if(b.id==="fPrev")$("prev").click();else if(b.id==="fNext")$("next").click();else if(b.id==="fPlay")$("playAll").click();else if(b.id==="fExit")document.exitFullscreen()};
+// Transport: rewind, slow-mo back/forward, fast forward, frame step
+let rev=null,mode="";const FPS=30;
+function stopRev(){clearInterval(rev);rev=null}
+function mark(){document.querySelectorAll("#tp [data-m]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===mode&&mode!=="toggle"))}
+function setMode(m){stopRev();if(mode===m&&m!=="toggle"){mode="";v.playbackRate=+$("rate").value;mark();if(m==="rew"||m==="slowb")return;v.playbackRate=+$("rate").value;return}
+ if(m==="toggle"){mode="";mark();v.playbackRate=+$("rate").value;if(qi>=0||playing)$("playAll").click();else v.paused?v.play():v.pause();return}
+ mode=m;mark();
+ if(m==="rew"||m==="slowb"){v.pause();const step=m==="rew"?.75:.0625;rev=setInterval(()=>{if(v.currentTime<=0){stopRev();mode="";mark();return}v.currentTime=Math.max(0,v.currentTime-step)},250)}
+ else{v.playbackRate=m==="ff"?2:.25;v.play()}}
+$("tp").onclick=e=>{const b=e.target.closest("button");if(!b)return;wake();
+ if(b.dataset.m)setMode(b.dataset.m);
+ else if(b.dataset.s)v.currentTime+=+b.dataset.s;
+ else if(b.dataset.f){v.pause();v.currentTime+=(+b.dataset.f)/FPS}};
+v.addEventListener("play",()=>{$("tpPlay").textContent="❚❚ Pause"});v.addEventListener("pause",()=>{$("tpPlay").textContent="▶ Play"});
+// Make the video's own full-screen button use our container, so text and controls stay visible
+document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement===v){const c=$("vid");document.exitFullscreen().then(()=>c.requestFullscreen()).catch(()=>{v.requestFullscreen&&v.requestFullscreen().catch(()=>{})})}});
+$("oT").onclick=()=>setOrder("time");$("oK").onclick=()=>setOrder("tactical");
+function setOrder(o){order=o;ordPick=true;if(!sel.size)ROWS.forEach(r=>sel.add(r));stopRev();mode="";mark();queue=[];qi=-1;playing=false;start()}
+function setText(b){showText=b;["txt","fTxt"].forEach(id=>{$(id).setAttribute("aria-pressed",b);$(id).textContent="Text: "+(b?"On":"Off")});nowKey="";if(!b)$("now").hidden=true;else updateNow(true)}
+$("txt").onclick=()=>setText(!showText);$("fTxt").onclick=()=>setText(!showText);
+$("rate").onchange=e=>{mode="";mark();stopRev();v.playbackRate=+e.target.value};
+$("cats").onclick=e=>{const b=e.target.closest("[data-r]");if(!b)return;sel.has(b.dataset.r)?sel.delete(b.dataset.r):sel.add(b.dataset.r);queue=[];qi=-1;playing=false;render()};
+$("quick").onclick=e=>{const b=e.target.closest("[data-q]");if(!b)return;const q=b.dataset.q;sel.clear();ROWS.forEach(r=>{if(q==="all"||(q==="good"&&isG(r))||(q==="bad"&&isB(r)))sel.add(r)});queue=[];qi=-1;playing=false;render()};
+$("pane").onclick=e=>{const t=e.target.closest("[data-t]");if(t){const [i,k,d]=t.dataset.t.split("|");if(k==="r"){delete adj[i];saveAdj();rebuild();render()}else trim(+i,k,+d);return}
+ const b=e.target.closest("[data-i]");if(b&&!v.hidden)start(+b.dataset.i)};
+document.addEventListener("keydown",e=>{if(/INPUT|SELECT/.test(e.target.tagName)||v.hidden)return;
+ if(e.key==="f"||e.key==="F")tfs();else if(e.key==="]")$("next").click();else if(e.key==="[")$("prev").click();else if(e.key==="ArrowRight")v.currentTime+=5;else if(e.key==="ArrowLeft")v.currentTime-=5;else if(e.key===" "){e.preventDefault();v.paused?v.play():v.pause()}});
+function show(){$("evt").textContent="Pick categories, then press Play — or click any clip."}
+$("fsb").onclick=()=>tfs();
+const sc=$("scrub");let drag=false;sc.oninput=()=>{drag=true;v.currentTime=+sc.value};sc.onchange=()=>{drag=false};
+v.addEventListener("timeupdate",()=>{const d=v.duration||0;if(d){sc.max=d;$("tdur").textContent=mm(d)}if(!drag)sc.value=v.currentTime;$("tcur").textContent=mm(v.currentTime)});
+function setOff(x){OFF=Math.round(x*10)/10;try{localStorage.setItem("ytOffset",OFF)}catch(e){}$("off").value=OFF;$("offinfo").textContent=OFF?`(clips shifted ${OFF>0?"+":""}${OFF}s)`:"(no shift)";queue=[];qi=-1;playing=false;$("now").hidden=true;render()}
+$("off").onchange=e=>{const n=parseFloat(e.target.value);if(!isNaN(n))setOff(n)};$("om").onclick=()=>setOff(OFF-1);$("op").onclick=()=>setOff(OFF+1);
+$("kick").onclick=()=>setOff(v.currentTime-CL[0].s);
+$("theme").onclick=()=>{const r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);r.dataset.theme=d?"light":"dark"};
+
+setOff(OFF);show();$("evt").textContent="Video starts from the beginning. Choose Clips in Order or Tactical Order to play clips.";
+</script></body></html>
