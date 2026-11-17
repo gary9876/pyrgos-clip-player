@@ -20,6 +20,7 @@ header{flex-direction:column;align-items:flex-start;gap:14px}.launch{display:fle
 .stage,.aside{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
 .vid{background:#000;position:relative}.vid video{display:block;width:100%;background:#000}.vid:is(:fullscreen,.pfs){display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}.vid:is(:fullscreen,.pfs) video{width:100vw;height:100vh;object-fit:contain}.vid:is(:fullscreen,.pfs) .now{font-size:20px!important;bottom:128px;left:24px;max-width:60%}
 .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:320px;color:#cfd8d3;text-align:center;padding:20px}.drop b{font-family:var(--display);font-size:22px;letter-spacing:.04em}
+#fsBtn{position:absolute;right:8px;bottom:48px;z-index:4;padding:6px 10px;font-size:13px;border-radius:6px;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.55);color:#fff;cursor:pointer}.vid:is(:fullscreen,.pfs) #fsBtn{display:none}
 .vwrap{position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;max-height:66vh}.vwrap video{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;background:#000}.vid.pfs{position:fixed;inset:0;z-index:9999;background:#000}
 .vid:is(:fullscreen,.pfs) .vwrap{width:100vw;height:100vh;max-height:none;aspect-ratio:auto}
 .now{position:absolute;left:12px;bottom:58px;max-width:62%;max-height:60vh;overflow:hidden;display:flex;flex-direction:column;gap:4px;background:none!important;border:0!important;padding:0!important;font-size:14px!important;padding:5px 10px;border-radius:5px;background:rgba(10,12,11,.74);border-left:3px solid var(--accent);color:#fff;font-size:12.5px;pointer-events:none}
@@ -64,7 +65,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
  <div class="stage">
   <div class="ticker"><div class="clock" id="clock">—</div><div class="evt" id="evt"></div></div>
   <div class="vid" id="vid">
-   <div class="vwrap"><video id="v" controls playsinline preload="metadata"></video><div class="now" id="now" hidden></div></div>
+   <div class="vwrap"><video id="v" controls controlslist="nofullscreen" playsinline preload="metadata"></video><div class="now" id="now" hidden></div><button id="fsBtn" title="Full screen" aria-label="Full screen">⛶ Full screen</button></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
     <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
    <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
@@ -179,7 +180,7 @@ $("tp").onclick=e=>{const b=e.target.closest("button");if(!b)return;wake();
  else if(b.dataset.f){v.pause();v.currentTime+=(+b.dataset.f)/FPS}};
 v.addEventListener("play",()=>{$("tpPlay").textContent="❚❚ Pause"});v.addEventListener("pause",()=>{$("tpPlay").textContent="▶ Play"});
 // Make the video's own full-screen button use our container, so text and controls stay visible
-document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement===v){const c=$("vid");document.exitFullscreen().then(()=>c.requestFullscreen()).catch(()=>{v.requestFullscreen&&v.requestFullscreen().catch(()=>{})})}});
+$("fsBtn").onclick=()=>enterFs();
 $("oT").onclick=()=>setOrder("time");$("oK").onclick=()=>setOrder("tactical");
 function setOrder(o){order=o;ordPick=true;if(!sel.size)ROWS.forEach(r=>sel.add(r));stopRev();mode="";mark();queue=[];qi=-1;playing=false;start()}
 function setText(b){showText=b;["txt","fTxt"].forEach(id=>{$(id).setAttribute("aria-pressed",b);$(id).textContent="Text: "+(b?"On":"Off")});nowKey="";if(!b)$("now").hidden=true;else updateNow(true)}
