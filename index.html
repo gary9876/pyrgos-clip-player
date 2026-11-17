@@ -17,9 +17,9 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
 .grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
 @media(max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
 .stage,.aside{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
-.vid{background:#000;position:relative}.vid iframe{display:block;width:100%;aspect-ratio:16/9;max-height:66vh;border:0;background:#000}.vid:is(:fullscreen,.pfs){display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}.vid:is(:fullscreen,.pfs) iframe{max-height:100vh;height:100vh;width:100vw;aspect-ratio:auto}.vid:is(:fullscreen,.pfs) .now{font-size:20px!important;bottom:120px;left:24px;max-width:60%}
+.vid{background:#000;position:relative}.vid video{display:block;width:100%;background:#000}.vid:is(:fullscreen,.pfs){display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}.vid:is(:fullscreen,.pfs) video{width:100vw;height:100vh;object-fit:contain}.vid:is(:fullscreen,.pfs) .now{font-size:20px!important;bottom:120px;left:24px;max-width:60%}
 .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:320px;color:#cfd8d3;text-align:center;padding:20px}.drop b{font-family:var(--display);font-size:22px;letter-spacing:.04em}
-.vwrap{position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;max-height:66vh}.vwrap iframe{position:absolute;left:0;top:0;width:100%;height:100%;max-height:none;aspect-ratio:auto}.vwrap.crop iframe{top:-48px;height:calc(100% + 48px)}.vid.pfs{position:fixed;inset:0;z-index:9999;background:#000}
+.vwrap{position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;max-height:66vh}.vwrap video{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;background:#000}.vid.pfs{position:fixed;inset:0;z-index:9999;background:#000}
 .vid:is(:fullscreen,.pfs) .vwrap{width:100vw;height:100vh}
 .now{position:absolute;left:12px;bottom:58px;max-width:62%;max-height:60vh;overflow:hidden;display:flex;flex-direction:column;gap:4px;background:none!important;border:0!important;padding:0!important;font-size:14px!important;padding:5px 10px;border-radius:5px;background:rgba(10,12,11,.74);border-left:3px solid var(--accent);color:#fff;font-size:12.5px;pointer-events:none}
 .ticker{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;min-height:36px;align-items:center}
@@ -62,9 +62,9 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
  <div class="stage">
   <div class="ticker"><div class="clock" id="clock">—</div><div class="evt" id="evt"></div></div>
   <div class="vid" id="vid">
-   <div class="vwrap"><iframe id="yt" allow="autoplay; encrypted-media; fullscreen" allowfullscreen title="Match video"></iframe><div class="now" id="now" hidden></div></div>
+   <div class="vwrap"><video id="v" controls playsinline preload="metadata"></video><div class="now" id="now" hidden></div></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
-    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-m="rew" title="Fast rewind">⏪</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-m="ff" title="Fast forward 2×">⏩</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><span class="sp"></span><button data-s="-10">−10s</button><button data-s="10">+10s</button><button data-f="-1">◀| Frame</button><button data-f="1">Frame |▶</button><button id="txt" aria-pressed="true" title="Show or hide the clip text">Text: On</button><button id="crop" aria-pressed="true" title="Hide the YouTube title bar at the top of the video">Hide title: On</button></div>
+    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-m="rew" title="Fast rewind">⏪</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-m="ff" title="Fast forward 2×">⏩</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><span class="sp"></span><button data-s="-10">−10s</button><button data-s="10">+10s</button><button data-f="-1">◀| Frame</button><button data-f="1">Frame |▶</button><button id="txt" aria-pressed="true" title="Show or hide the clip text">Text: On</button></div>
    <div class="fsbar" id="fsbar"><button data-o="time" id="fOT">Clips in Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
   <div class="pad row">
@@ -87,30 +87,14 @@ const CL=[{"r":"ASP - Good","s":871.7,"e":885.7,"n":"Good strike but this kickof
 const COL={IP:"#2a8bd6",OOP:"#d97a1f",ASP:"#8a5bd6",DSP:"#14a5a0",DT:"#d6a21f",Other:"#8a948f"};
 const kind=r=>r.split(" - ")[0],isG=r=>/Good$/.test(r),isB=r=>/Bad$/.test(r);
 const $=id=>document.getElementById(id);
-const YT_ID="d-_KNexWXfw";
 let OFF=0;
-// Player shim: gives the YouTube iframe the same small API the page used for a <video> element
-const ytf=$("yt"),L={};let got=false;
-const cmd=(f,a)=>{try{ytf.contentWindow.postMessage(JSON.stringify({event:"command",func:f,args:a||[]}),"*")}catch(e){}};
-const emit=n=>(L[n]||[]).forEach(f=>f());
-const v={hidden:false,_t:0,_p:true,_r:1,_d:0,_l:performance.now(),
- get currentTime(){return this._p?this._t:this._t+(performance.now()-this._l)/1000*this._r},
- set currentTime(x){this._t=Math.max(0,x);this._l=performance.now();cmd("seekTo",[this._t,true])},
- get paused(){return this._p},get duration(){return this._d},
- get playbackRate(){return this._r},set playbackRate(r){this._r=r;cmd("setPlaybackRate",[r])},
- play(){this._l=performance.now();cmd("playVideo");if(this._p){this._p=false;emit("play")}},
- pause(){const t=this.currentTime;cmd("pauseVideo");this._t=t;if(!this._p){this._p=true;emit("pause")}},
- addEventListener(n,f){(L[n]=L[n]||[]).push(f)}};
-ytf.src="https://www.youtube.com/embed/"+YT_ID+"?enablejsapi=1&controls=1&fs=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1"+(location.protocol.startsWith("http")?"&origin="+encodeURIComponent(location.origin):"");
-const hand=()=>{try{ytf.contentWindow.postMessage(JSON.stringify({event:"listening",id:"clips",channel:"widget"}),"*");cmd("addEventListener",["onStateChange"])}catch(e){}};
-ytf.addEventListener("load",()=>{let n=0;hand();const h=setInterval(()=>{if(got||++n>20)clearInterval(h);else hand()},500)});
-window.addEventListener("message",e=>{if(e.source!==ytf.contentWindow)return;let d;try{d=typeof e.data==="string"?JSON.parse(e.data):e.data}catch(x){return}if(!d)return;got=true;
- const i=d.info&&typeof d.info==="object"?d.info:{};if(d.event==="onStateChange"&&typeof d.info==="number")i.playerState=d.info;
- if(typeof i.duration==="number"&&i.duration>0)v._d=i.duration;
- if(typeof i.currentTime==="number"){v._t=i.currentTime;v._l=performance.now()}
- if(typeof i.playbackRate==="number")v._r=i.playbackRate;
- if(typeof i.playerState==="number"){const pl=i.playerState===1||i.playerState===3;if(pl&&v._p){v._p=false;v._l=performance.now();emit("play")}else if(!pl&&!v._p){v._p=true;emit("pause")}if(i.playerState===0)emit("ended")}});
-setInterval(()=>emit("timeupdate"),200);
+const v=$("v");v.src="https://dl.dropboxusercontent.com/scl/fi/wekjb4qes24wf10g7rjik/Pyrgos_v_AO_Ag_720p.mp4?rlkey=g07r9vymuk5375ivdfkbd4eq8&st=wh9xpnj1&raw=1";
+// captions backup: shows the clip text in iPhone/iPad native full screen
+const tr=v.addTextTrack("captions","Clip","en");tr.mode="hidden";
+const cue=new VTTCue(0,86400,"");cue.snapToLines=true;cue.line=-2;cue.align="start";cue.position=1;cue.positionAlign="line-left";cue.size=62;tr.addCue(cue);
+const vtt=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+v.addEventListener("webkitbeginfullscreen",()=>{tr.mode="showing"});v.addEventListener("webkitendfullscreen",()=>{tr.mode="hidden"});
+v.onerror=()=>{$("evt").textContent="The video could not be loaded. Check your connection and reload the page."};
 const KO0=["IP","AT","OOP","DT","ASP","DSP","Other"],tk0=r=>{let k=KO0.indexOf(kind(r));if(k<0)k=6;return k*2+(/Bad$/.test(r)?1:0)};
 const ROWS=[...new Set(CL.map(c=>c.r))].sort((a,b)=>tk0(a)-tk0(b));
 const sel=new Set();let ordPick=false,showText=true;let queue=[],qi=-1,playing=false;
@@ -142,9 +126,10 @@ const gc=r=>isG(r)?"#34c26f":isB(r)?"#f0605a":"#93a19a";
 let nowKey="";
 
 const esc=s=>s.replace(/</g,"&lt;");
-function updateNow(force){if(!showText||!playing||qi<0){$("now").hidden=true;nowKey="";return}
+function updateNow(force){if(!showText||!playing||qi<0){$("now").hidden=true;nowKey="";cue.text="";return}
  const t=v.currentTime;let act=queue.filter(c=>t>=c.s-.05&&t<=c.e&&(order!=="tactical"||c.r===queue[qi].r));if(!act.length)act=[queue[qi]];
  const key=act.map(c=>c.i).join(",");if(key===nowKey&&!force)return;nowKey=key;
+ cue.text=act.map(c=>"<b>"+vtt(c.r)+"</b>"+(c.n?" — "+vtt(c.n):"")).join("\n");
  $("now").hidden=false;$("now").innerHTML=act.map(c=>`<div style="--c:${gc(c.r)}"><b>${c.r}</b>${c.n?" — "+esc(c.n):""}</div>`).join("")}
 function advance(){const t=v.currentTime,lead=+$("pre").value;let k=qi+1;
  const same=c=>order==="time"||c.r===queue[qi].r;
@@ -197,7 +182,7 @@ $("pane").onclick=e=>{const t=e.target.closest("[data-t]");if(t){const [i,k,d]=t
 document.addEventListener("keydown",e=>{if(/INPUT|SELECT/.test(e.target.tagName)||v.hidden)return;
  if(e.key==="f"||e.key==="F")tfs();else if(e.key==="]")$("next").click();else if(e.key==="[")$("prev").click();else if(e.key==="ArrowRight")v.currentTime+=5;else if(e.key==="ArrowLeft")v.currentTime-=5;else if(e.key===" "){e.preventDefault();v.paused?v.play():v.pause()}});
 function show(){$("evt").textContent="Pick categories, then press Play — or click any clip."}
-$("crop").onclick=()=>{const on=$("crop").getAttribute("aria-pressed")!=="true";$("crop").setAttribute("aria-pressed",on);$("crop").textContent="Hide title: "+(on?"On":"Off");document.querySelector(".vwrap").classList.toggle("crop",on)};document.querySelector(".vwrap").classList.add("crop");
+
 const sc=$("scrub");let drag=false;sc.oninput=()=>{drag=true;v.currentTime=+sc.value};sc.onchange=()=>{drag=false};
 v.addEventListener("timeupdate",()=>{const d=v.duration||0;if(d){sc.max=d;$("tdur").textContent=mm(d)}if(!drag)sc.value=v.currentTime;$("tcur").textContent=mm(v.currentTime)});
 function setOff(x){OFF=Math.round(x*10)/10;try{localStorage.setItem("ytOffset",OFF)}catch(e){}$("off").value=OFF;$("offinfo").textContent=OFF?`(clips shifted ${OFF>0?"+":""}${OFF}s)`:"(no shift)";queue=[];qi=-1;playing=false;$("now").hidden=true;render()}
