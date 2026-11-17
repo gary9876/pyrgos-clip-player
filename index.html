@@ -33,6 +33,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
 .chip i{width:9px;height:9px;border-radius:50%;display:inline-block}.chip small{opacity:.7;font-family:var(--mono)}
 .lbl{font-size:12px;color:var(--muted)}
 .cats{border-top:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.srch{padding:8px 12px;border-bottom:1px solid var(--line)}.srch input{width:100%;box-sizing:border-box;padding:9px 11px;font-size:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit}
 .aside h3{margin:0;padding:10px 12px;font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
 .pane{padding:10px 12px;max-height:700px;overflow:auto}
 .clip{display:block;width:100%;text-align:left;border:1px solid var(--line);background:transparent;border-radius:5px;margin-bottom:6px;padding:7px 9px}
@@ -65,10 +66,10 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
   <div class="vid" id="vid">
    <div class="vwrap"><video id="v" controls playsinline preload="metadata"></video><div class="now" id="now" hidden></div></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
-    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-m="rew" title="Fast rewind">⏪</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-m="ff" title="Fast forward 2×">⏩</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><span class="sp"></span><button data-s="-10">−10s</button><button data-s="10">+10s</button><button data-f="-1">◀| Frame</button><button data-f="1">Frame |▶</button><button id="txt" aria-pressed="true" title="Show or hide the clip text">Text: On</button></div>
+    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
    <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
-  <div class="pad row">
+  <div class="pad row" hidden>
    <button class="primary" id="playAll">▶ Play</button>
    <button id="stop">■ Stop</button><button id="prev">◀ Prev clip</button><button id="next">Next clip ▶</button>
    <span class="lbl" id="qinfo"></span>
@@ -80,7 +81,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
    <div class="row"><button id="kick">Set: this moment = first clip (kickoff)</button><span class="lbl">Offset</span><button id="om">−1s</button><input type="text" id="off" aria-label="Offset seconds"><button id="op">+1s</button><span class="lbl" id="offinfo"></span></div></div>
   <div class="cats"><div class="row" id="quick"></div><div class="row" id="cats"></div></div>
  </div>
- <div class="aside"><h3><span class="seg"><button id="oT" aria-pressed="false">Clips in Order</button><button id="oK" aria-pressed="false">Tactical Order</button></span><span class="lbl" id="count"></span></h3><div class="pane" id="pane"></div></div>
+ <div class="aside"><h3><span class="seg"><button id="oT" aria-pressed="false">Clips in Order</button><button id="oK" aria-pressed="false">Tactical Order</button></span><span class="lbl" id="count"></span></h3><div class="srch"><input type="search" id="q" placeholder="Search clip names and notes…" aria-label="Search clips" autocomplete="off"></div><div class="pane" id="pane"></div></div>
 </div>
 </div>
 <script>
@@ -105,7 +106,8 @@ let adj={};try{adj=JSON.parse(localStorage.getItem("clipAdj")||"{}")}catch(e){}
 const saveAdj=()=>{try{localStorage.setItem("clipAdj",JSON.stringify(adj))}catch(e){}};
 let order="time";const KO=["IP","AT","OOP","DT","ASP","DSP","Other"];
 const tkey=r=>{let k=KO.indexOf(kind(r));if(k<0)k=KO.length-1;return k*2+(isB(r)?1:0)};
-const list=()=>CL.map((c,i)=>({...c,i,s:Math.max(0,c.s+OFF+((adj[i]||{}).s||0)),e:c.e+OFF+((adj[i]||{}).e||0)})).filter(c=>sel.has(c.r)).sort((a,b)=>order==="tactical"?(tkey(a.r)-tkey(b.r))||(a.s-b.s):a.s-b.s);
+let Q="";const hit=c=>!Q||Q.split(/\s+/).every(t=>(c.r+" "+c.n).toLowerCase().includes(t));
+const list=()=>CL.map((c,i)=>({...c,i,s:Math.max(0,c.s+OFF+((adj[i]||{}).s||0)),e:c.e+OFF+((adj[i]||{}).e||0)})).filter(c=>(sel.has(c.r)||(Q&&!sel.size))&&hit(c)).sort((a,b)=>order==="tactical"?(tkey(a.r)-tkey(b.r))||(a.s-b.s):a.s-b.s);
 function rebuild(){const cur=queue[qi]?queue[qi].i:null;queue=qi>=0?list():[];if(cur!=null)qi=queue.findIndex(c=>c.i===cur)}
 function trim(i,k,d){const a=adj[i]=adj[i]||{s:0,e:0};a[k]=(a[k]||0)+d;if(!a.s&&!a.e)delete adj[i];saveAdj();rebuild();
  if(k==="s"&&!v.hidden){const c=list().find(c=>c.i===i);v.currentTime=Math.max(0,c.s-(+$("pre").value))}render()}
@@ -114,7 +116,7 @@ function buildChips(){
  $("quick").innerHTML=`<span class="lbl">Show</span><button class="chip" data-q="all">All</button><button class="chip" data-q="good">All Good</button><button class="chip" data-q="bad">All Bad</button><button class="chip" data-q="none">None</button>`;
  $("cats").innerHTML=ROWS.map(r=>{const n=CL.filter(c=>c.r===r).length;return `<button class="chip" data-r="${r}" aria-pressed="${sel.has(r)}"><i style="background:${col(r)}"></i>${r}<small>${n}</small></button>`}).join("")}
 function render(){buildChips();const L=list();$("count").textContent=L.length+" of "+CL.length;
- $("pane").innerHTML=L.length?L.map(c=>`<div class="clip ${queue[qi]&&queue[qi].i===c.i?"on":""}" style="border-left:4px solid ${gc(c.r)}"><button class="main" data-i="${c.i}"><div class="h"><span><span class="dot" style="background:${col(c.r)}"></span>${c.r}</span><span class="lbl">${mm(c.s)}–${mm(c.e)}</span></div>${c.n?`<div class="n">${c.n.replace(/</g,"&lt;")}</div>`:""}</button>${trims(c)}</div>`).join(""):`<div class="empty">Choose <b>Clips in Order</b> or <b>Tactical Order</b> above to start playing, or pick categories below.</div>`;
+ $("pane").innerHTML=L.length?L.map(c=>`<div class="clip ${queue[qi]&&queue[qi].i===c.i?"on":""}" style="border-left:4px solid ${gc(c.r)}"><button class="main" data-i="${c.i}"><div class="h"><span><span class="dot" style="background:${col(c.r)}"></span>${c.r}</span><span class="lbl">${mm(c.s)}–${mm(c.e)}</span></div>${c.n?`<div class="n">${c.n.replace(/</g,"&lt;")}</div>`:""}</button>${trims(c)}</div>`).join(""):`<div class="empty">${Q?"No clips match “"+Q.replace(/</g,"&lt;")+"”.":"Choose <b>Clips in Order</b> or <b>Tactical Order</b> above to start playing, or pick categories below, or search."}</div>`;
  const on=$("pane").querySelector(".on");if(on)on.scrollIntoView({block:"nearest"});
  $("qinfo").textContent=playing?`Clip ${qi+1} of ${queue.length}`:"";
  $("playAll").textContent=playing?"❚❚ Pause":"▶ Play";$("fPlay").textContent=$("playAll").textContent;$("fOT").setAttribute("aria-pressed",ordPick&&order==="time");$("fOK").setAttribute("aria-pressed",ordPick&&order==="tactical");$("oT").setAttribute("aria-pressed",ordPick&&order==="time");$("oK").setAttribute("aria-pressed",ordPick&&order==="tactical")}
@@ -171,7 +173,8 @@ function setMode(m){stopRev();if(mode===m&&m!=="toggle"){mode="";v.playbackRate=
  if(m==="rew"||m==="slowb"){v.pause();const step=m==="rew"?.75:.0625;rev=setInterval(()=>{if(v.currentTime<=0){stopRev();mode="";mark();return}v.currentTime=Math.max(0,v.currentTime-step)},250)}
  else{v.playbackRate=m==="ff"?2:.25;v.play()}}
 $("tp").onclick=e=>{const b=e.target.closest("button");if(!b)return;wake();
- if(b.dataset.m)setMode(b.dataset.m);
+ if(b.dataset.c)$(b.dataset.c).click();
+ else if(b.dataset.m)setMode(b.dataset.m);
  else if(b.dataset.s)v.currentTime+=+b.dataset.s;
  else if(b.dataset.f){v.pause();v.currentTime+=(+b.dataset.f)/FPS}};
 v.addEventListener("play",()=>{$("tpPlay").textContent="❚❚ Pause"});v.addEventListener("pause",()=>{$("tpPlay").textContent="▶ Play"});
@@ -184,6 +187,7 @@ $("txt").onclick=()=>setText(!showText);$("fTxt").onclick=()=>setText(!showText)
 $("rate").onchange=e=>{mode="";mark();stopRev();v.playbackRate=+e.target.value};
 $("cats").onclick=e=>{const b=e.target.closest("[data-r]");if(!b)return;sel.has(b.dataset.r)?sel.delete(b.dataset.r):sel.add(b.dataset.r);queue=[];qi=-1;playing=false;render()};
 $("quick").onclick=e=>{const b=e.target.closest("[data-q]");if(!b)return;const q=b.dataset.q;sel.clear();ROWS.forEach(r=>{if(q==="all"||(q==="good"&&isG(r))||(q==="bad"&&isB(r)))sel.add(r)});queue=[];qi=-1;playing=false;render()};
+$("q").oninput=e=>{Q=e.target.value.trim().toLowerCase();rebuild();render()};
 $("pane").onclick=e=>{const t=e.target.closest("[data-t]");if(t){const [i,k,d]=t.dataset.t.split("|");if(k==="r"){delete adj[i];saveAdj();rebuild();render()}else trim(+i,k,+d);return}
  const b=e.target.closest("[data-i]");if(b&&!v.hidden)start(+b.dataset.i)};
 document.addEventListener("keydown",e=>{if(/INPUT|SELECT/.test(e.target.tagName)||v.hidden)return;
