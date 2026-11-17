@@ -200,5 +200,5 @@ function setOff(x){OFF=Math.round(x*10)/10;try{localStorage.setItem("ytOffset",O
 $("off").onchange=e=>{const n=parseFloat(e.target.value);if(!isNaN(n))setOff(n)};$("om").onclick=()=>setOff(OFF-1);$("op").onclick=()=>setOff(OFF+1);
 $("kick").onclick=()=>setOff(v.currentTime-CL[0].s);
 
-setOff(OFF);show();$("evt").textContent="Use the buttons above to watch the full match or the clips.";
+ROWS.forEach(r=>sel.add(r));ordPick=true;order="time";setOff(OFF);show();$("evt").textContent="Use the buttons above to watch the full match or the clips.";
 </script></body></html>
