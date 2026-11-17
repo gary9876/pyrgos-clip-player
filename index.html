@@ -11,6 +11,7 @@
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;padding:16px 16px 32px}
 .wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px}
+header{flex-direction:column;align-items:flex-start;gap:14px}.launch{display:flex;flex-wrap:wrap;gap:10px;width:100%}.launch button{flex:1 1 200px;font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:18px;padding:14px 18px;background:var(--accent);color:#fff;border-color:var(--accent);border-radius:6px}.launch button:hover{filter:brightness(1.1);border-color:var(--accent)}
 .comp{font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--muted);font-weight:600}
 .score{font-family:var(--display);font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1;display:flex;gap:.35em;align-items:baseline;flex-wrap:wrap}
 .score .n{font-variant-numeric:tabular-nums}.score .q{color:var(--accent)}.score .v{color:var(--muted);font-size:.6em}
@@ -57,7 +58,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
 <div class="wrap">
 <header><div><div class="comp">Greek Women's A1 · 2026/27 · Sun 15 Nov</div>
 <div class="score"><span class="q">Pyrgos AFC</span><span class="n">1</span><span class="v">–</span><span class="n">2</span><span>AO Ag. Paraskevi</span></div><div class="comp" style="margin-top:6px">Full time · Pyrgos lost 1–2</div></div>
-<div class="row"><button id="theme">◐ Theme</button></div></header>
+<div class="launch" role="group" aria-label="Watch"><button id="lFull">Full match</button><button id="lTime">Clips in Game Order</button><button id="lTac">Clips in Tactical Order</button></div></header>
 <div class="grid">
  <div class="stage">
   <div class="ticker"><div class="clock" id="clock">—</div><div class="evt" id="evt"></div></div>
@@ -65,7 +66,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
    <div class="vwrap"><video id="v" controls playsinline preload="metadata"></video><div class="now" id="now" hidden></div></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
     <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-m="rew" title="Fast rewind">⏪</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-m="ff" title="Fast forward 2×">⏩</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><span class="sp"></span><button data-s="-10">−10s</button><button data-s="10">+10s</button><button data-f="-1">◀| Frame</button><button data-f="1">Frame |▶</button><button id="txt" aria-pressed="true" title="Show or hide the clip text">Text: On</button></div>
-   <div class="fsbar" id="fsbar"><button data-o="time" id="fOT">Clips in Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
+   <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
   <div class="pad row">
    <button class="primary" id="playAll">▶ Play</button>
@@ -149,11 +150,17 @@ const vidEl=$("vid");
 const inFs=()=>!!document.fullscreenElement||vidEl.classList.contains("pfs");
 function exitFs(){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});vidEl.classList.remove("pfs");wake()}
 function tfs(){}
+function enterFs(){if(inFs())return;const r=vidEl.requestFullscreen||vidEl.webkitRequestFullscreen;
+ if(r){try{const p=r.call(vidEl);if(p&&p.catch)p.catch(()=>{vidEl.classList.add("pfs");wake()});return}catch(e){}}
+ vidEl.classList.add("pfs");wake()}
+function fullMatch(){sel.clear();ordPick=false;queue=[];qi=-1;playing=false;stopRev();mode="";mark();$("now").hidden=true;cue.text="";nowKey="";render();v.play()}
+function launch(k){enterFs();if(k==="full")fullMatch();else{ROWS.forEach(r=>sel.add(r));setOrder(k)}}
+$("lFull").onclick=()=>launch("full");$("lTime").onclick=()=>launch("time");$("lTac").onclick=()=>launch("tactical");
 document.addEventListener("keydown",e=>{if(e.key==="Escape")vidEl.classList.remove("pfs")});
 v.addEventListener("dblclick",e=>{e.preventDefault();tfs()});
 const fb=$("fsbar"),tpb=$("tp");let ft;const wake=()=>{fb.classList.remove("hide");tpb.classList.remove("hide");clearTimeout(ft);ft=setTimeout(()=>{if(inFs()&&!v.paused){fb.classList.add("hide");tpb.classList.add("hide")}},3000)};
 $("vid").addEventListener("mousemove",wake);$("vid").addEventListener("click",wake);document.addEventListener("fullscreenchange",wake);
-fb.onclick=e=>{const b=e.target.closest("button");if(!b)return;wake();if(b.dataset.o)setOrder(b.dataset.o);else if(b.id==="fPrev")$("prev").click();else if(b.id==="fNext")$("next").click();else if(b.id==="fPlay")$("playAll").click();else if(b.id==="fExit")exitFs()};
+fb.onclick=e=>{const b=e.target.closest("button");if(!b)return;wake();if(b.dataset.o)setOrder(b.dataset.o);else if(b.id==="fPrev")$("prev").click();else if(b.id==="fNext")$("next").click();else if(b.id==="fPlay")$("playAll").click();else if(b.id==="fExit")exitFs();else if(b.id==="fFull")fullMatch()};
 // Transport: rewind, slow-mo back/forward, fast forward, frame step
 let rev=null,mode="";const FPS=30;
 function stopRev(){clearInterval(rev);rev=null}
@@ -188,7 +195,6 @@ v.addEventListener("timeupdate",()=>{const d=v.duration||0;if(d){sc.max=d;$("tdu
 function setOff(x){OFF=Math.round(x*10)/10;try{localStorage.setItem("ytOffset",OFF)}catch(e){}$("off").value=OFF;$("offinfo").textContent=OFF?`(clips shifted ${OFF>0?"+":""}${OFF}s)`:"(no shift)";queue=[];qi=-1;playing=false;$("now").hidden=true;render()}
 $("off").onchange=e=>{const n=parseFloat(e.target.value);if(!isNaN(n))setOff(n)};$("om").onclick=()=>setOff(OFF-1);$("op").onclick=()=>setOff(OFF+1);
 $("kick").onclick=()=>setOff(v.currentTime-CL[0].s);
-$("theme").onclick=()=>{const r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);r.dataset.theme=d?"light":"dark"};
 
-setOff(OFF);show();$("evt").textContent="Video starts from the beginning. Choose Clips in Order or Tactical Order to play clips.";
+setOff(OFF);show();$("evt").textContent="Use the buttons above to watch the full match or the clips.";
 </script></body></html>
