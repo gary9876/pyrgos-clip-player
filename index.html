@@ -19,9 +19,9 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
 .stage,.aside{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
 .vid{background:#000;position:relative}.vid iframe{display:block;width:100%;aspect-ratio:16/9;max-height:66vh;border:0;background:#000}.vid:is(:fullscreen,.pfs){display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}.vid:is(:fullscreen,.pfs) iframe{max-height:100vh;height:100vh;width:100vw;aspect-ratio:auto}.vid:is(:fullscreen,.pfs) .now{font-size:20px!important;bottom:120px;left:24px;max-width:60%}
 .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:320px;color:#cfd8d3;text-align:center;padding:20px}.drop b{font-family:var(--display);font-size:22px;letter-spacing:.04em}
-.vwrap{position:relative;overflow:hidden}.vid.pfs{position:fixed;inset:0;z-index:9999;background:#000}
-.vwrap.crop iframe{transform:scale(1.16);transform-origin:50% 100%}.vid:is(:fullscreen,.pfs) .vwrap{width:100vw;height:100vh}
-.now{position:absolute;left:12px;bottom:14px;max-width:62%;max-height:60vh;overflow:hidden;display:flex;flex-direction:column;gap:4px;background:none!important;border:0!important;padding:0!important;font-size:14px!important;padding:5px 10px;border-radius:5px;background:rgba(10,12,11,.74);border-left:3px solid var(--accent);color:#fff;font-size:12.5px;pointer-events:none}
+.vwrap{position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;max-height:66vh}.vwrap iframe{position:absolute;left:0;top:0;width:100%;height:100%;max-height:none;aspect-ratio:auto}.vwrap.crop iframe{top:-48px;height:calc(100% + 48px)}.vid.pfs{position:fixed;inset:0;z-index:9999;background:#000}
+.vid:is(:fullscreen,.pfs) .vwrap{width:100vw;height:100vh}
+.now{position:absolute;left:12px;bottom:58px;max-width:62%;max-height:60vh;overflow:hidden;display:flex;flex-direction:column;gap:4px;background:none!important;border:0!important;padding:0!important;font-size:14px!important;padding:5px 10px;border-radius:5px;background:rgba(10,12,11,.74);border-left:3px solid var(--accent);color:#fff;font-size:12.5px;pointer-events:none}
 .ticker{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;min-height:36px;align-items:center}
 .clock{font-family:var(--mono);font-size:14px;white-space:nowrap}.evt{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.evt b{color:var(--fg)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pad{padding:10px 12px}
@@ -44,7 +44,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
 .fsbar{display:none;position:absolute;left:0;right:0;top:0;padding:12px 16px;gap:8px;flex-wrap:wrap;background:linear-gradient(rgba(0,0,0,.65),transparent);z-index:3;transition:opacity .3s}
 .fsbar button{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.3)}.fsbar button[aria-pressed="true"]{background:#fff;color:#111}
 .vid:is(:fullscreen,.pfs) .fsbar{display:flex}.vid:is(:fullscreen,.pfs) .fsbar.hide{opacity:0;pointer-events:none}
-.tp .scrub{flex:1 1 100%;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}.tp .scrub input{flex:1;accent-color:var(--accent)}.vid:is(:fullscreen,.pfs) .tp .scrub{color:#fff}
+.tp .scrub{display:none!important;flex:1 1 100%;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}.tp .scrub input{flex:1;accent-color:var(--accent)}.vid:is(:fullscreen,.pfs) .tp .scrub{color:#fff}
 .tp .big{min-width:150px;font-weight:600;padding:8px 14px}
 .off input{width:70px;font-family:var(--mono)}
 .tp{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;padding:8px 10px;background:var(--surface);border-top:1px solid var(--line)}.tp .sp{flex:1}
@@ -64,7 +64,7 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
   <div class="vid" id="vid">
    <div class="vwrap"><iframe id="yt" allow="autoplay; encrypted-media; fullscreen" allowfullscreen title="Match video"></iframe><div class="now" id="now" hidden></div></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
-    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-m="rew" title="Fast rewind">⏪</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-m="ff" title="Fast forward 2×">⏩</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><span class="sp"></span><button data-s="-10">−10s</button><button data-s="10">+10s</button><button data-f="-1">◀| Frame</button><button data-f="1">Frame |▶</button><button id="txt" aria-pressed="true" title="Show or hide the clip text">Text: On</button><button id="fsb" title="Full screen"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" style="vertical-align:-2px"><path d="M1 6V1h5M10 1h5v5M15 10v5h-5M6 15H1v-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg> Full screen</button><button id="crop" aria-pressed="true" title="Hide the YouTube title bar by zooming in slightly">Hide title: On</button></div>
+    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-m="rew" title="Fast rewind">⏪</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-m="ff" title="Fast forward 2×">⏩</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><span class="sp"></span><button data-s="-10">−10s</button><button data-s="10">+10s</button><button data-f="-1">◀| Frame</button><button data-f="1">Frame |▶</button><button id="txt" aria-pressed="true" title="Show or hide the clip text">Text: On</button><button id="crop" aria-pressed="true" title="Hide the YouTube title bar at the top of the video">Hide title: On</button></div>
    <div class="fsbar" id="fsbar"><button data-o="time" id="fOT">Clips in Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
   <div class="pad row">
@@ -101,7 +101,7 @@ const v={hidden:false,_t:0,_p:true,_r:1,_d:0,_l:performance.now(),
  play(){this._l=performance.now();cmd("playVideo");if(this._p){this._p=false;emit("play")}},
  pause(){const t=this.currentTime;cmd("pauseVideo");this._t=t;if(!this._p){this._p=true;emit("pause")}},
  addEventListener(n,f){(L[n]=L[n]||[]).push(f)}};
-ytf.src="https://www.youtube.com/embed/"+YT_ID+"?enablejsapi=1&controls=0&fs=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1"+(location.protocol.startsWith("http")?"&origin="+encodeURIComponent(location.origin):"");
+ytf.src="https://www.youtube.com/embed/"+YT_ID+"?enablejsapi=1&controls=1&fs=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&disablekb=1"+(location.protocol.startsWith("http")?"&origin="+encodeURIComponent(location.origin):"");
 const hand=()=>{try{ytf.contentWindow.postMessage(JSON.stringify({event:"listening",id:"clips",channel:"widget"}),"*");cmd("addEventListener",["onStateChange"])}catch(e){}};
 ytf.addEventListener("load",()=>{let n=0;hand();const h=setInterval(()=>{if(got||++n>20)clearInterval(h);else hand()},500)});
 window.addEventListener("message",e=>{if(e.source!==ytf.contentWindow)return;let d;try{d=typeof e.data==="string"?JSON.parse(e.data):e.data}catch(x){return}if(!d)return;got=true;
@@ -163,9 +163,7 @@ $("prev").onclick=()=>{if(v.hidden)return;if(!queue.length||qi<0){queue=list();l
 const vidEl=$("vid");
 const inFs=()=>!!document.fullscreenElement||vidEl.classList.contains("pfs");
 function exitFs(){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});vidEl.classList.remove("pfs");wake()}
-function tfs(){if(inFs())return exitFs();const r=vidEl.requestFullscreen||vidEl.webkitRequestFullscreen;
- if(r){try{const p=r.call(vidEl);if(p&&p.catch)p.catch(()=>{vidEl.classList.add("pfs");wake()});return}catch(e){}}
- vidEl.classList.add("pfs");wake()}
+function tfs(){}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")vidEl.classList.remove("pfs")});
 v.addEventListener("dblclick",e=>{e.preventDefault();tfs()});
 const fb=$("fsbar"),tpb=$("tp");let ft;const wake=()=>{fb.classList.remove("hide");tpb.classList.remove("hide");clearTimeout(ft);ft=setTimeout(()=>{if(inFs()&&!v.paused){fb.classList.add("hide");tpb.classList.add("hide")}},3000)};
@@ -199,7 +197,6 @@ $("pane").onclick=e=>{const t=e.target.closest("[data-t]");if(t){const [i,k,d]=t
 document.addEventListener("keydown",e=>{if(/INPUT|SELECT/.test(e.target.tagName)||v.hidden)return;
  if(e.key==="f"||e.key==="F")tfs();else if(e.key==="]")$("next").click();else if(e.key==="[")$("prev").click();else if(e.key==="ArrowRight")v.currentTime+=5;else if(e.key==="ArrowLeft")v.currentTime-=5;else if(e.key===" "){e.preventDefault();v.paused?v.play():v.pause()}});
 function show(){$("evt").textContent="Pick categories, then press Play — or click any clip."}
-$("fsb").onclick=()=>tfs();
 $("crop").onclick=()=>{const on=$("crop").getAttribute("aria-pressed")!=="true";$("crop").setAttribute("aria-pressed",on);$("crop").textContent="Hide title: "+(on?"On":"Off");document.querySelector(".vwrap").classList.toggle("crop",on)};document.querySelector(".vwrap").classList.add("crop");
 const sc=$("scrub");let drag=false;sc.oninput=()=>{drag=true;v.currentTime=+sc.value};sc.onchange=()=>{drag=false};
 v.addEventListener("timeupdate",()=>{const d=v.duration||0;if(d){sc.max=d;$("tdur").textContent=mm(d)}if(!drag)sc.value=v.currentTime;$("tcur").textContent=mm(v.currentTime)});
