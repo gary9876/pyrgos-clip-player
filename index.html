@@ -69,6 +69,19 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
 .vid:is(:fullscreen,.pfs) .tp .scrub{font-size:11px}.vid.touchfs .now{bottom:72px;max-width:48%}.vid:is(:fullscreen,.pfs) .now>div{padding:4px 8px}}
 .vid.pfs{height:100dvh;width:100%}.vid.pfs .vwrap,.vid.pfs video{width:100%;height:100%}
 body.pfsOn{overflow:hidden}
+.tl{flex:1 1 100%;position:relative;padding:0 0 0 46px;user-select:none;-webkit-user-select:none;margin-bottom:2px}
+.tlrow{position:relative;height:13px;border-top:1px solid var(--line);cursor:pointer}.tlrow:last-child{border-bottom:1px solid var(--line)}
+.tlrow .l{position:absolute;left:-46px;width:42px;text-align:right;font:600 10px/13px var(--mono);color:var(--muted)}
+.mk{position:absolute;top:2px;height:8px;min-width:4px;border-radius:2px;cursor:pointer}.mk:hover{filter:brightness(1.25);transform:scaleY(1.3)}
+.mk.dim{opacity:.22}.mk.on{box-shadow:0 0 0 2px var(--fg);z-index:2}
+.tlHead{position:absolute;top:0;bottom:14px;width:2px;margin-left:-1px;background:var(--accent);pointer-events:none;z-index:3}
+.tlAx{position:relative;height:14px;font:10px/14px var(--mono);color:var(--muted)}.tlAx span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.vid:is(:fullscreen,.pfs) .tl{padding-left:0;height:14px;margin-bottom:4px}
+.vid:is(:fullscreen,.pfs) .tlrow{position:absolute;left:0;right:0;top:0;height:14px;border:0}.vid:is(:fullscreen,.pfs) .tlrow:first-child{background:rgba(255,255,255,.12);border-radius:3px}
+.vid:is(:fullscreen,.pfs) .tlrow .l,.vid:is(:fullscreen,.pfs) .tlAx{display:none}.vid:is(:fullscreen,.pfs) .tlHead{bottom:0;background:#fff}
+.vid:is(:fullscreen,.pfs) .mk{top:2px;height:10px;min-width:5px}.vid:is(:fullscreen,.pfs) .mk.on{box-shadow:0 0 0 2px #fff}
+.vid:is(:fullscreen,.pfs) .now{bottom:148px}.vid.touchfs .now{bottom:116px}
+@media (max-height:520px){.vid.touchfs .now{bottom:92px}}
 </style></head><body>
 <div class="wrap">
 <header><div><div class="score" style="font-size:.7em;margin-bottom:4px"><span>Jana Match Video Review</span></div><div class="comp">Greek Women's A1 · 2026/27 · Sun 15 Nov</div>
@@ -79,7 +92,7 @@ body.pfsOn{overflow:hidden}
   <div class="ticker"><div class="clock" id="clock">—</div><div class="evt" id="evt"></div></div>
   <div class="vid" id="vid">
    <div class="vwrap"><video id="v" controls controlslist="nofullscreen" playsinline preload="metadata"></video><div class="now" id="now" hidden></div><button id="fsBtn" title="Full screen" aria-label="Full screen">⛶ Full screen</button></div>
-   <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
+   <div class="tp" id="tp"><div class="tl" id="tl" aria-label="Match timeline"><div id="tlL"></div><div class="tlHead" id="tlH"></div><div class="tlAx" id="tlAx"></div></div><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
     <button data-m="rew" title="Rewind">⏪ Rewind</button><button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
    <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
@@ -121,7 +134,8 @@ const saveAdj=()=>{try{localStorage.setItem("clipAdj",JSON.stringify(adj))}catch
 let order="time";const KO=["IP","AT","OOP","DT","ASP","DSP","Other"];
 const tkey=r=>{let k=KO.indexOf(kind(r));if(k<0)k=KO.length-1;return k*2+(isB(r)?1:0)};
 let Q="";const hit=c=>!Q||Q.split(/\s+/).every(t=>(c.r+" "+c.n).toLowerCase().includes(t));
-const list=()=>CL.map((c,i)=>({...c,i,s:Math.max(0,c.s+OFF+((adj[i]||{}).s||0)),e:c.e+OFF+((adj[i]||{}).e||0)})).filter(c=>(sel.has(c.r)||(Q&&!sel.size))&&hit(c)).sort((a,b)=>order==="tactical"?(tkey(a.r)-tkey(b.r))||(a.s-b.s):a.s-b.s);
+const allC=()=>CL.map((c,i)=>({...c,i,s:Math.max(0,c.s+OFF+((adj[i]||{}).s||0)),e:c.e+OFF+((adj[i]||{}).e||0)}));
+const list=()=>allC().filter(c=>(sel.has(c.r)||(Q&&!sel.size))&&hit(c)).sort((a,b)=>order==="tactical"?(tkey(a.r)-tkey(b.r))||(a.s-b.s):a.s-b.s);
 function rebuild(){const cur=queue[qi]?queue[qi].i:null;queue=qi>=0?list():[];if(cur!=null)qi=queue.findIndex(c=>c.i===cur)}
 function trim(i,k,d){const a=adj[i]=adj[i]||{s:0,e:0};a[k]=(a[k]||0)+d;if(!a.s&&!a.e)delete adj[i];saveAdj();rebuild();
  if(k==="s"&&!v.hidden){const c=list().find(c=>c.i===i);v.currentTime=Math.max(0,c.s-(+$("pre").value))}render()}
@@ -129,11 +143,25 @@ const trims=c=>{const a=adj[c.i]||{},f=n=>n?(n>0?"+":"")+n+"s":"0";return `<div 
 function buildChips(){
  $("quick").innerHTML=`<span class="lbl">Show</span><button class="chip" data-q="all">All</button><button class="chip" data-q="good">All Good</button><button class="chip" data-q="bad">All Bad</button><button class="chip" data-q="none">None</button>`;
  $("cats").innerHTML=ROWS.map(r=>{const n=CL.filter(c=>c.r===r).length;return `<button class="chip" data-r="${r}" aria-pressed="${sel.has(r)}"><i style="background:${col(r)}"></i>${r}<small>${n}</small></button>`}).join("")}
-function render(){buildChips();const L=list();$("count").textContent=L.length+" of "+CL.length;
+function render(){buildChips();drawTL();const L=list();$("count").textContent=L.length+" of "+CL.length;
  $("pane").innerHTML=L.length?L.map(c=>`<div class="clip ${queue[qi]&&queue[qi].i===c.i?"on":""}" style="border-left:4px solid ${gc(c.r)}"><button class="main" data-i="${c.i}"><div class="h"><span><span class="dot" style="background:${col(c.r)}"></span>${c.r}</span><span class="lbl">${mm(c.s)}–${mm(c.e)}</span></div>${c.n?`<div class="n">${c.n.replace(/</g,"&lt;")}</div>`:""}</button>${trims(c)}</div>`).join(""):`<div class="empty">${Q?"No clips match “"+Q.replace(/</g,"&lt;")+"”.":"Choose <b>Clips in Order</b> or <b>Tactical Order</b> above to start playing, or pick categories below, or search."}</div>`;
  const on=$("pane").querySelector(".on");if(on)on.scrollIntoView({block:"nearest"});
  $("qinfo").textContent=playing?`Clip ${qi+1} of ${queue.length}`:"";
  $("playAll").textContent=playing?"❚❚ Pause":"▶ Play";$("fOT").setAttribute("aria-pressed",ordPick&&order==="time");$("fOK").setAttribute("aria-pressed",ordPick&&order==="tactical");$("oT").setAttribute("aria-pressed",ordPick&&order==="time");$("oK").setAttribute("aria-pressed",ordPick&&order==="tactical")}
+// Match timeline
+const KINDS=KO0.filter(k=>CL.some(c=>(KO0.includes(kind(c.r))?kind(c.r):"Other")===k));
+let TLO=0,THI=1;
+const qa=s=>esc(s).replace(/"/g,"&quot;");
+function drawTL(){const A=allC(),inL=new Set(list().map(c=>c.i)),cur=queue[qi]?queue[qi].i:null;
+ TLO=Math.max(0,Math.min(...A.map(c=>c.s))-30);THI=Math.max(...A.map(c=>c.e))+30;const R=THI-TLO,pc=t=>((t-TLO)/R*100).toFixed(3)+"%";
+ $("tlL").innerHTML=KINDS.map(k=>`<div class="tlrow" data-row="1"><span class="l">${k}</span>${A.filter(c=>(KO0.includes(kind(c.r))?kind(c.r):"Other")===k).map(c=>`<div class="mk${(Q||sel.size)&&!inL.has(c.i)?" dim":""}${c.i===cur?" on":""}" data-k="${c.i}" title="${qa(c.r)} · ${mm(c.s)}${c.n?" — "+qa(c.n):""}" style="left:${pc(c.s)};width:${pc(TLO+c.e-c.s)};background:${gc(c.r)}"></div>`).join("")}</div>`).join("");
+ let ax="";for(let t=Math.ceil(TLO/900)*900;t<THI;t+=900)ax+=`<span style="left:${pc(t)}">${mm(t)}</span>`;$("tlAx").innerHTML=ax;moveHead()}
+function moveHead(){const f=(v.currentTime-TLO)/(THI-TLO),h=$("tlH");h.hidden=!(f>=0&&f<=1);h.style.left=`calc(${$("vid").matches(":fullscreen,.pfs")?"0px":"46px"} + (100% - ${$("vid").matches(":fullscreen,.pfs")?"0px":"46px"}) * ${Math.min(1,Math.max(0,f))})`}
+$("tl").addEventListener("click",e=>{wake();const m=e.target.closest(".mk");
+ if(m){const i=+m.dataset.k;if(!list().some(c=>c.i===i)){Q="";$("q").value="";sel.add(CL[i].r)}ordPick=true;stopRev();mode="";mark();start(i);return}
+ const row=e.target.closest(".tlrow");if(!row)return;const r=row.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));
+ playing=false;qi=-1;queue=[];$("now").hidden=true;cue.text="";nowKey="";v.currentTime=TLO+f*(THI-TLO);v.play();render()});
+v.addEventListener("timeupdate",moveHead);
 function playAt(k){if(k<0||k>=queue.length){return stopQ()}qi=k;const c=queue[k];
  v.currentTime=Math.max(0,c.s-(+$("pre").value));v.play();playing=true;
  updateNow(true);render()}
@@ -167,7 +195,7 @@ const inFs=()=>!!document.fullscreenElement||vidEl.classList.contains("pfs");
 function exitFs(){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});vidEl.classList.remove("pfs");syncFs();wake()}
 function tfs(){}
 const touch=matchMedia("(pointer:coarse)");
-function syncFs(){document.body.classList.toggle("pfsOn",vidEl.classList.contains("pfs"));const t=inFs()&&touch.matches;vidEl.classList.toggle("touchfs",t);if(t)v.removeAttribute("controls");else v.setAttribute("controls","")}
+function syncFs(){setTimeout(moveHead,50);document.body.classList.toggle("pfsOn",vidEl.classList.contains("pfs"));const t=inFs()&&touch.matches;vidEl.classList.toggle("touchfs",t);if(t)v.removeAttribute("controls");else v.setAttribute("controls","")}
 function enterFs(){if(inFs())return;const r=vidEl.requestFullscreen||vidEl.webkitRequestFullscreen;
  if(r){try{const p=r.call(vidEl);if(p&&p.catch)p.catch(()=>{vidEl.classList.add("pfs");syncFs();wake()});return}catch(e){}}
  vidEl.classList.add("pfs");syncFs();wake()}
