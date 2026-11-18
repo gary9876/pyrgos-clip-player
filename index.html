@@ -1,4 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Jana Review">
 <title>Jana Match Video Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -65,6 +66,8 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
 .vid:is(:fullscreen,.pfs) .fsbar button,.vid:is(:fullscreen,.pfs) .tp button{font-size:12px;padding:4px 9px;min-width:0}
 .vid:is(:fullscreen,.pfs) .tp{gap:5px;padding-top:2px;padding-bottom:max(6px,env(safe-area-inset-bottom))}.vid:is(:fullscreen,.pfs) .tp .big{min-width:0}
 .vid:is(:fullscreen,.pfs) .tp .scrub{font-size:11px}.vid.touchfs .now{bottom:72px;max-width:48%}.vid:is(:fullscreen,.pfs) .now>div{padding:4px 8px}}
+.vid.pfs{height:100dvh;width:100%}.vid.pfs .vwrap,.vid.pfs video{width:100%;height:100%}
+body.pfsOn{overflow:hidden}
 </style></head><body>
 <div class="wrap">
 <header><div><div class="score" style="font-size:.7em;margin-bottom:4px"><span>Jana Match Video Review</span></div><div class="comp">Greek Women's A1 · 2026/27 · Sun 15 Nov</div>
@@ -76,8 +79,8 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
   <div class="vid" id="vid">
    <div class="vwrap"><video id="v" controls controlslist="nofullscreen" playsinline preload="metadata"></video><div class="now" id="now" hidden></div><button id="fsBtn" title="Full screen" aria-label="Full screen">⛶ Full screen</button></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
-    <button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
-   <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fPrev">◀ Prev</button><button id="fPlay">▶ Play</button><button id="fNext">Next ▶</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
+    <button data-m="rew" title="Rewind">⏪ Rewind</button><button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
+   <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
   <div class="pad row" hidden>
    <button class="primary" id="playAll">▶ Play</button>
@@ -129,7 +132,7 @@ function render(){buildChips();const L=list();$("count").textContent=L.length+" 
  $("pane").innerHTML=L.length?L.map(c=>`<div class="clip ${queue[qi]&&queue[qi].i===c.i?"on":""}" style="border-left:4px solid ${gc(c.r)}"><button class="main" data-i="${c.i}"><div class="h"><span><span class="dot" style="background:${col(c.r)}"></span>${c.r}</span><span class="lbl">${mm(c.s)}–${mm(c.e)}</span></div>${c.n?`<div class="n">${c.n.replace(/</g,"&lt;")}</div>`:""}</button>${trims(c)}</div>`).join(""):`<div class="empty">${Q?"No clips match “"+Q.replace(/</g,"&lt;")+"”.":"Choose <b>Clips in Order</b> or <b>Tactical Order</b> above to start playing, or pick categories below, or search."}</div>`;
  const on=$("pane").querySelector(".on");if(on)on.scrollIntoView({block:"nearest"});
  $("qinfo").textContent=playing?`Clip ${qi+1} of ${queue.length}`:"";
- $("playAll").textContent=playing?"❚❚ Pause":"▶ Play";$("fPlay").textContent=$("playAll").textContent;$("fOT").setAttribute("aria-pressed",ordPick&&order==="time");$("fOK").setAttribute("aria-pressed",ordPick&&order==="tactical");$("oT").setAttribute("aria-pressed",ordPick&&order==="time");$("oK").setAttribute("aria-pressed",ordPick&&order==="tactical")}
+ $("playAll").textContent=playing?"❚❚ Pause":"▶ Play";$("fOT").setAttribute("aria-pressed",ordPick&&order==="time");$("fOK").setAttribute("aria-pressed",ordPick&&order==="tactical");$("oT").setAttribute("aria-pressed",ordPick&&order==="time");$("oK").setAttribute("aria-pressed",ordPick&&order==="tactical")}
 function playAt(k){if(k<0||k>=queue.length){return stopQ()}qi=k;const c=queue[k];
  v.currentTime=Math.max(0,c.s-(+$("pre").value));v.play();playing=true;
  updateNow(true);render()}
@@ -163,7 +166,7 @@ const inFs=()=>!!document.fullscreenElement||vidEl.classList.contains("pfs");
 function exitFs(){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});vidEl.classList.remove("pfs");syncFs();wake()}
 function tfs(){}
 const touch=matchMedia("(pointer:coarse)");
-function syncFs(){const t=inFs()&&touch.matches;vidEl.classList.toggle("touchfs",t);if(t)v.removeAttribute("controls");else v.setAttribute("controls","")}
+function syncFs(){document.body.classList.toggle("pfsOn",vidEl.classList.contains("pfs"));const t=inFs()&&touch.matches;vidEl.classList.toggle("touchfs",t);if(t)v.removeAttribute("controls");else v.setAttribute("controls","")}
 function enterFs(){if(inFs())return;const r=vidEl.requestFullscreen||vidEl.webkitRequestFullscreen;
  if(r){try{const p=r.call(vidEl);if(p&&p.catch)p.catch(()=>{vidEl.classList.add("pfs");syncFs();wake()});return}catch(e){}}
  vidEl.classList.add("pfs");syncFs();wake()}
