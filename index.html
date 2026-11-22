@@ -78,6 +78,9 @@ body.pfsOn{overflow:hidden}
 .mfilt{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 10px}.mfilt button{padding:6px 12px;border-radius:999px;font-size:13px}
 .mfilt button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .launch button:disabled{opacity:.35;cursor:not-allowed}
+.tfilt{padding:4px 12px 10px;display:grid;gap:6px;border-bottom:1px solid var(--line)}.tfilt .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tfilt .lbl{min-width:68px}.tfilt button{padding:5px 11px;border-radius:999px;font-size:13px}.tfilt button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+body.team .cats:not(.off){display:none}
 </style></head><body>
 <div class="wrap">
 <header><div><div class="score" style="font-size:.7em;margin-bottom:4px"><span>Jana Match Video Review</span></div>
@@ -105,7 +108,7 @@ body.pfsOn{overflow:hidden}
   <div class="cats off" hidden><div class="row"><span class="lbl"><b>Sync to this video</b> — the clip times came from a different recording, so line them up once:</span></div>
    <div class="row"><button id="kick">Set: this moment = first clip (kickoff)</button><span class="lbl">Offset</span><button id="om">−1s</button><input type="text" id="off" aria-label="Offset seconds"><button id="op">+1s</button><span class="lbl" id="offinfo"></span></div></div>
  </div>
- <div class="aside"><h3><span class="seg"><button id="oT" aria-pressed="false">Clips in Order</button><button id="oK" aria-pressed="false">Tactical Order</button></span><span class="lbl" id="count"></span></h3><div class="srch"><input type="search" id="q" placeholder="Search clip names and notes…" aria-label="Search clips" autocomplete="off"></div><div class="pane" id="pane"></div></div>
+ <div class="aside"><h3><span class="seg"><button id="oT" aria-pressed="false">Clips in Order</button><button id="oK" aria-pressed="false">Tactical Order</button></span><span class="lbl" id="count"></span></h3><div class="srch"><input type="search" id="q" placeholder="Search clip names and notes…" aria-label="Search clips" autocomplete="off"></div><div class="tfilt" id="tfilt" hidden></div><div class="pane" id="pane"></div></div>
 </div>
   <div class="cats" style="margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)"><div class="row" id="quick"></div><div class="row" id="cats"></div></div>
 </div>
@@ -125,7 +128,7 @@ const MATCHES={
  par:{tab:"Pyrgos 1–2 AO Ag. Paraskevi · 15 Nov",comp:"Greek Women's A1 · 2026/27 · Sun 15 Nov",score:'<span class="q">Pyrgos AFC</span><span class="n">1</span><span class="v">–</span><span class="n">2</span><span>AO Ag. Paraskevi</span>',res:"Full time · Pyrgos lost 1–2",
   src:"https://dl.dropboxusercontent.com/scl/fi/wekjb4qes24wf10g7rjik/Pyrgos_v_AO_Ag_720p.mp4?rlkey=g07r9vymuk5375ivdfkbd4eq8&st=wh9xpnj1&raw=1",jana:CL_PAR,team:null,offKey:"ytOffset"},
  vol:{tab:"Volos 0–2 Pyrgos · 22 Nov",comp:"Greek Women's A1 · 2026/27 · Sun 22 Nov",score:'<span>Volos</span><span class="n">0</span><span class="v">–</span><span class="n">2</span><span class="q">Pyrgos AFC</span>',res:"Full time · Pyrgos won 2–0",
-  src:"https://dl.dropboxusercontent.com/scl/fi/o40wa8t1c4fihi4jldltp/Volos_v_Pyrgos_W_2026-11-22.mp4?rlkey=w7vln2h4yzz2aaw5ppx57aynw&st=i6nap93r&raw=1",jana:null,team:[{"r": "Kick Off", "s": 1006.5, "e": 1026, "n": "1st half kick-off"}, {"r": "Pyrgos Free Kick", "s": 1177, "e": 1202, "n": "Free kick into the box"}, {"r": "Volos Free Kick", "s": 1629, "e": 1652, "n": "Free kick into the box"}, {"r": "Volos Free Kick", "s": 2319, "e": 2342, "n": "Free kick into the box"}, {"r": "Pyrgos Goal", "s": 2363, "e": 2400, "n": "1–0 Pyrgos"}, {"r": "Volos Kick Off", "s": 2440.5, "e": 2459, "n": "Restart after Pyrgos goal"}, {"r": "Volos Free Kick", "s": 2933, "e": 2956, "n": "Free kick into the box"}, {"r": "Pyrgos Corner", "s": 3030, "e": 3052, "n": ""}, {"r": "Pyrgos Free Kick", "s": 3884, "e": 3904, "n": "Free kick that led to the 2nd goal"}, {"r": "Pyrgos Goal", "s": 3877, "e": 3910, "n": "2–0 Pyrgos, scored from a free kick"}, {"r": "Volos Kick Off", "s": 3926, "e": 3944, "n": "Restart after Pyrgos goal"}, {"r": "Kick Off", "s": 4835, "e": 4853, "n": "2nd half kick-off"}, {"r": "Volos Corner", "s": 5358, "e": 5380, "n": ""}, {"r": "Volos Free Kick", "s": 6348, "e": 6372, "n": "Free kick into the box"}, {"r": "Volos Free Kick", "s": 6409, "e": 6432, "n": "Free kick cross into the box"}, {"r": "Volos Corner", "s": 6773, "e": 6795, "n": ""}, {"r": "Volos Corner", "s": 6888, "e": 6910, "n": ""}, {"r": "Volos Corner", "s": 7081, "e": 7103, "n": ""}, {"r": "Volos Corner", "s": 7648, "e": 7670, "n": ""}, {"r": "Volos Corner", "s": 7749, "e": 7771, "n": ""}],offKey:"off_vol"}};
+  src:"https://dl.dropboxusercontent.com/scl/fi/o40wa8t1c4fihi4jldltp/Volos_v_Pyrgos_W_2026-11-22.mp4?rlkey=w7vln2h4yzz2aaw5ppx57aynw&st=i6nap93r&raw=1",jana:null,team:[{"r": "Kick Off", "s": 1006.5, "e": 1026, "n": "1st half kick-off"}, {"r": "Pyrgos Free Kick", "s": 1177, "e": 1202, "n": "Free kick into the box"}, {"r": "Volos Free Kick", "s": 1629, "e": 1652, "n": "Free kick into the box"}, {"r": "Volos Free Kick", "s": 2319, "e": 2342, "n": "Free kick into the box"}, {"r": "Pyrgos Goal", "s": 2358, "e": 2400, "n": "1–0 Pyrgos"}, {"r": "Volos Kick Off", "s": 2440.5, "e": 2459, "n": "Restart after Pyrgos goal"}, {"r": "Volos Free Kick", "s": 2933, "e": 2956, "n": "Free kick into the box"}, {"r": "Pyrgos Corner", "s": 3030, "e": 3052, "n": ""}, {"r": "Pyrgos Free Kick", "s": 3884, "e": 3904, "n": "Free kick that led to the 2nd goal"}, {"r": "Pyrgos Goal", "s": 3872, "e": 3910, "n": "2–0 Pyrgos, scored from a free kick"}, {"r": "Volos Kick Off", "s": 3926, "e": 3944, "n": "Restart after Pyrgos goal"}, {"r": "Kick Off", "s": 4835, "e": 4853, "n": "2nd half kick-off"}, {"r": "Volos Corner", "s": 5358, "e": 5380, "n": ""}, {"r": "Volos Free Kick", "s": 6348, "e": 6372, "n": "Free kick into the box"}, {"r": "Volos Free Kick", "s": 6409, "e": 6432, "n": "Free kick cross into the box"}, {"r": "Volos Corner", "s": 6773, "e": 6795, "n": ""}, {"r": "Volos Corner", "s": 6888, "e": 6910, "n": ""}, {"r": "Volos Corner", "s": 7081, "e": 7103, "n": ""}, {"r": "Volos Corner", "s": 7648, "e": 7670, "n": ""}, {"r": "Volos Corner", "s": 7749, "e": 7771, "n": ""}],offKey:"off_vol"}};
 let CL=CL_PAR,MID="par",SET="jana";
 const COL={IP:"#2a8bd6",OOP:"#d97a1f",ASP:"#8a5bd6",DSP:"#14a5a0",DT:"#d6a21f",Other:"#8a948f"};
 const kind=r=>r.split(" - ")[0],isG=r=>/Good$/.test(r),isB=r=>/Bad$/.test(r);
@@ -200,8 +203,15 @@ function enterFs(){if(inFs())return;const r=vidEl.requestFullscreen||vidEl.webki
  vidEl.classList.add("pfs");syncFs();wake()}
 function fullMatch(){sel.clear();ordPick=false;queue=[];qi=-1;playing=false;stopRev();mode="";mark();$("now").hidden=true;cue.text="";nowKey="";render();v.play()}
 function launch(k){if(k==="team"){if(!MATCHES[MID].team)return;useSet("team")}else if(k!=="full"){if(!MATCHES[MID].jana)return;useSet("jana")}
- enterFs();if(k==="full")fullMatch();else{ROWS.forEach(r=>sel.add(r));setOrder(k==="team"?"time":k)}}
-function useSet(set){if(SET===set&&CL===MATCHES[MID][set])return;SET=set;CL=MATCHES[MID][set]||[];mkRows();loadAdj();sel.clear();ROWS.forEach(r=>sel.add(r));queue=[];qi=-1;playing=false;Q="";$("q").value="";$("now").hidden=true;cue.text="";nowKey="";render()}
+ if(k!=="team")enterFs();if(k==="full")fullMatch();else if(k==="team"){if(!sel.size)applyTF();setOrder("time")}else{ROWS.forEach(r=>sel.add(r));setOrder(k)}}
+let TF="all",CF="all";
+const TCATS=[["all","All"],["Kick Off","Kick-offs"],["Goal","Goals"],["Corner","Corners"],["Free Kick","Free kicks"]];
+function applyTF(){sel.clear();ROWS.forEach(r=>{const t=TF==="all"||r.startsWith(TF+" "),c=CF==="all"||r.endsWith(CF);if(t&&c)sel.add(r)});queue=[];qi=-1;playing=false;$("now").hidden=true;cue.text="";nowKey="";render()}
+function drawTF(){const el=$("tfilt");el.hidden=SET!=="team";document.body.classList.toggle("team",SET==="team");if(SET!=="team")return;
+ const b=(k,v,l,on)=>`<button data-${k}="${v}" aria-pressed="${on}">${l}</button>`;
+ el.innerHTML=`<div class="row"><span class="lbl">Team</span>${[["all","Both"],["Pyrgos","Pyrgos"],["Volos","Volos"]].map(([v,l])=>b("tf",v,l,TF===v)).join("")}</div><div class="row"><span class="lbl">Category</span>${TCATS.filter(([v])=>v==="all"||ROWS.some(r=>r.endsWith(v))).map(([v,l])=>b("cf",v,l,CF===v)).join("")}</div>`}
+$("tfilt").onclick=e=>{const t=e.target.closest("[data-tf],[data-cf]");if(!t)return;if(t.dataset.tf)TF=t.dataset.tf;else CF=t.dataset.cf;drawTF();applyTF()};
+function useSet(set){if(SET===set&&CL===MATCHES[MID][set])return;SET=set;CL=MATCHES[MID][set]||[];mkRows();loadAdj();sel.clear();ROWS.forEach(r=>sel.add(r));TF="all";CF="all";drawTF();queue=[];qi=-1;playing=false;Q="";$("q").value="";$("now").hidden=true;cue.text="";nowKey="";render()}
 function useMatch(id,silent){const M=MATCHES[id];if(!M)return;const ch=id!==MID;MID=id;try{localStorage.setItem("match",id)}catch(e){}
  $("mComp").textContent=M.comp;$("mScore").innerHTML=M.score;$("mRes").textContent=M.res;
  $("mfilt").querySelectorAll("[data-m]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mm===id));
@@ -262,7 +272,7 @@ function setOff(x){OFF=Math.round(x*10)/10;try{localStorage.setItem(MATCHES[MID]
 $("off").onchange=e=>{const n=parseFloat(e.target.value);if(!isNaN(n))setOff(n)};$("om").onclick=()=>setOff(OFF-1);$("op").onclick=()=>setOff(OFF+1);
 $("kick").onclick=()=>setOff(v.currentTime-CL[0].s);
 
-let m0="par";try{m0=new URLSearchParams(location.search).get("match")||localStorage.getItem("match")||"par"}catch(e){}if(!MATCHES[m0])m0="par";
+const LATEST=Object.keys(MATCHES).pop();let m0=LATEST;try{m0=new URLSearchParams(location.search).get("match")||LATEST}catch(e){}if(!MATCHES[m0])m0=LATEST;
 MID="";useMatch(m0);ordPick=true;order="time";show();$("evt").textContent="Use the buttons above to watch the full match or the clips.";
 // ---- Export MP4 (records the clips in real time onto a canvas) ----
 const exD=$("exDlg");let exCancel=false,exBusy=false;
