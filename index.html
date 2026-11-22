@@ -74,6 +74,7 @@ body.pfsOn{overflow:hidden}
 #exDlg h3{margin:0 0 12px;font-family:var(--display);text-transform:uppercase;letter-spacing:.06em}
 #exDlg label{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:15px}#exDlg .exTxt{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 #exDlg p{margin:12px 0}#exDlg progress{width:100%;height:12px;accent-color:var(--accent)}#exDlg .row{margin-top:12px}
+#tp button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 </style></head><body>
 <div class="wrap">
 <header><div><div class="score" style="font-size:.7em;margin-bottom:4px"><span>Jana Match Video Review</span></div><div class="comp">Greek Women's A1 · 2026/27 · Sun 15 Nov</div>
@@ -85,7 +86,7 @@ body.pfsOn{overflow:hidden}
   <div class="vid" id="vid">
    <div class="vwrap"><video id="v" controls controlslist="nofullscreen" playsinline preload="metadata"></video><div class="now" id="now" hidden></div><button id="fsBtn" title="Full screen" aria-label="Full screen">⛶ Full screen</button></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
-    <button data-m="rew" title="Rewind">⏪ Rewind</button><button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="exBtn" title="Save clips as a video file">⬇ Export MP4</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
+    <button data-m="rew" title="Hold to rewind">⏪ Rewind</button><button class="big" data-m="slowb" title="Hold for slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Hold for slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Hold to fast forward 2×">Fast forward ⏩</button><button id="exBtn" title="Save clips as a video file">⬇ Export MP4</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
    <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
   <div class="pad row" hidden>
@@ -108,9 +109,9 @@ body.pfsOn{overflow:hidden}
 <div id="exSetup"><label><input type="radio" name="exWhat" value="one" id="exOne"> <span id="exOneL">Current clip</span></label>
 <label><input type="radio" name="exWhat" value="all" checked> <span id="exAllL">All clips in the current list</span></label>
 <label class="exTxt"><input type="checkbox" id="exText" checked> Include clip text on the video</label>
-<p class="lbl">Export records in real time, so a 5-minute reel takes about 5 minutes. Keep this tab open and on screen while it runs.</p>
+<p class="lbl">Works best in Chrome or Edge on a computer. Keep this tab open while it runs.</p>
 <div class="row"><button type="button" class="primary" id="exGo">Start export</button><button value="cancel">Cancel</button></div></div>
-<div id="exRun" hidden><p id="exMsg">Preparing…</p><progress id="exProg" max="1" value="0"></progress>
+<div id="exRun" hidden><p id="exMsg">Preparing…</p><progress id="exProg" max="1" value="0"></progress><p class="lbl" id="exEta"></p>
 <div class="row"><button type="button" id="exStop">Cancel export</button><button value="close" id="exClose" hidden>Close</button></div></div>
 </form></dialog>
 <script>
@@ -205,10 +206,16 @@ function setMode(m){stopRev();if(mode===m&&m!=="toggle"){mode="";v.playbackRate=
  else{v.playbackRate=m==="ff"?2:.25;v.play()}}
 $("tp").onclick=e=>{const b=e.target.closest("button");if(!b)return;wake();
  if(b.dataset.c)$(b.dataset.c).click();
- else if(b.dataset.m)setMode(b.dataset.m);
+ else if(b.dataset.m&&!HOLD.has(b.dataset.m))setMode(b.dataset.m);
  else if(b.dataset.s)v.currentTime+=+b.dataset.s;
  else if(b.dataset.f){v.pause();v.currentTime+=(+b.dataset.f)/FPS}};
 v.addEventListener("play",()=>{$("tpPlay").textContent="❚❚ Pause"});v.addEventListener("pause",()=>{$("tpPlay").textContent="▶ Play"});
+// Hold-to-use: rewind / slow-mo / fast forward run while held, normal play on release
+const HOLD=new Set(["rew","slowb","slowf","ff"]);let holding=false;
+$("tp").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-m]");if(!b||!HOLD.has(b.dataset.m)||e.button>0)return;e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}wake();holding=true;mode="";setMode(b.dataset.m)});
+const holdEnd=()=>{if(!holding)return;holding=false;stopRev();mode="";mark();v.playbackRate=+$("rate").value;v.play();wake()};
+["pointerup","pointercancel","lostpointercapture"].forEach(t=>$("tp").addEventListener(t,holdEnd));
+$("tp").addEventListener("contextmenu",e=>{if(e.target.closest("[data-m]"))e.preventDefault()});
 // Make the video's own full-screen button use our container, so text and controls stay visible
 $("fsBtn").onclick=()=>enterFs();
 $("oT").onclick=()=>setOrder("time");$("oK").onclick=()=>setOrder("tactical");
@@ -251,9 +258,69 @@ function drawText(ctx,c,W,H){const fs=Math.round(H*0.036),pad=fs*.55,maxW=W*.58,
   if(rem>0){const a=l.slice(0,rem);ctx.font=`700 ${fs}px Barlow, Arial, sans-serif`;ctx.fillStyle=gc(c.r);ctx.fillText(a,tx,ty);tx+=ctx.measureText(a).width;rem-=a.length+1;l=l.slice(a.length)}
   ctx.font=`500 ${fs}px Barlow, Arial, sans-serif`;ctx.fillStyle="#fff";ctx.fillText(l,tx,ty)})}
 const once=(el,ev)=>new Promise((res,rej)=>{const ok=()=>{cl();res()},bad=()=>{cl();rej(new Error("video"))},cl=()=>{el.removeEventListener(ev,ok);el.removeEventListener("error",bad)};el.addEventListener(ev,ok);el.addEventListener("error",bad)});
+const loadJS=src=>new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`))return res();const e=document.createElement("script");e.src=src;e.onload=res;e.onerror=()=>rej(new Error("lib"));document.head.appendChild(e)});
+async function rng(a,b){const ctl=new AbortController(),r=await fetch(v.currentSrc||v.src,{headers:{Range:`bytes=${a}-${b}`},signal:ctl.signal});
+ if(r.status!==206){ctl.abort();throw new Error("range")}return r.arrayBuffer()}
+let MOV=null;
+async function loadMovie(){if(MOV)return MOV;await loadJS("lib/mp4box.all.min.js");await loadJS("lib/mp4-muxer.js");
+ let pos=0,ftyp=null,moov=null;
+ for(let i=0;i<64&&!moov;i++){const h=new DataView(await rng(pos,pos+15));let size=h.getUint32(0);const type=String.fromCharCode(h.getUint8(4),h.getUint8(5),h.getUint8(6),h.getUint8(7));
+  if(size===1)size=Number(h.getBigUint64(8));if(size<8)break;
+  if(type==="ftyp")ftyp=await rng(pos,pos+size-1);else if(type==="moov")moov=await rng(pos,pos+size-1);pos+=size}
+ if(!moov)throw new Error("moov");
+ const f=MP4Box.createFile();let info=null;f.onReady=i=>{info=i};
+ const n1=ftyp?ftyp.byteLength:0,u=new Uint8Array(n1+moov.byteLength);if(ftyp)u.set(new Uint8Array(ftyp),0);u.set(new Uint8Array(moov),n1);const ab=u.buffer;ab.fileStart=0;f.appendBuffer(ab);f.flush();
+ if(!info||!info.videoTracks.length)throw new Error("moov");
+ const vt=info.videoTracks[0],at=info.audioTracks[0],vtr=f.getTrackById(vt.id),atr=at&&f.getTrackById(at.id);
+ const en=vtr.mdia.minf.stbl.stsd.entries[0],bx=en.avcC||en.hvcC||en.vpcC||en.av1C;let desc;
+ if(bx){const ds=new DataStream(undefined,0,DataStream.BIG_ENDIAN);bx.write(ds);desc=new Uint8Array(ds.buffer,8)}
+ let A=null;if(atr){try{const e=atr.mdia.minf.stbl.stsd.entries[0];A={sr:at.audio.sample_rate,ch:at.audio.channel_count,asc:e.esds.esd.descs[0].descs[0].data,ss:atr.samples,ts:at.timescale}}catch(_){}}
+ return MOV={vcodec:vt.codec,desc,W:vt.video.width,H:vt.video.height,vs:vtr.samples,vts:vt.timescale,A}}
+function segsOf(L){const out=[];for(const c of L){const p=out[out.length-1];if(p&&c.s<p.e&&c.s>=p.s&&(order==="time"||p.clips[0].r===c.r)){p.e=Math.max(p.e,c.e);p.clips.push(c)}else out.push({s:c.s,e:c.e,clips:[c]})}return out}
+async function fastExport(L,withText,msg,prog){
+ if(!window.VideoEncoder||!window.VideoDecoder)throw new Error("nowebcodecs");
+ msg("Reading the match video…");const M=await loadMovie(),segs=segsOf(L),total=segs.reduce((a,g)=>a+g.e-g.s,0),W=M.W&~1,H=M.H&~1;
+ const dcfg={codec:M.vcodec,codedWidth:M.W,codedHeight:M.H,description:M.desc};
+ if(!(await VideoDecoder.isConfigSupported(dcfg)).supported)throw new Error("nowebcodecs");
+ let cfg=null;for(const c of["avc1.640028","avc1.4d0028","avc1.42001f"]){const t={codec:c,width:W,height:H,bitrate:4e6,framerate:30,avc:{format:"avc"}};if((await VideoEncoder.isConfigSupported(t)).supported){cfg=t;break}}
+ if(!cfg)throw new Error("nowebcodecs");
+ const tgt=new Mp4Muxer.ArrayBufferTarget(),mux=new Mp4Muxer.Muxer({target:tgt,fastStart:"in-memory",firstTimestampBehavior:"offset",video:{codec:"avc",width:W,height:H},audio:M.A?{codec:"aac",numberOfChannels:M.A.ch,sampleRate:M.A.sr}:undefined});
+ let err=null,base=0,nF=0,seg=null,done=0,aMeta=true;const t0=performance.now();
+ const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
+ const enc=new VideoEncoder({output:(ch,meta)=>mux.addVideoChunk(ch,meta),error:e=>{err=e}});enc.configure(cfg);
+ const dec=new VideoDecoder({output:f=>{try{const t=f.timestamp/1e6;if(seg&&t>=seg.s-1e-3&&t<seg.e){ctx.drawImage(f,0,0,W,H);
+   if(withText){const c=seg.clips.filter(c=>c.s<=t+1e-3).pop()||seg.clips[0];drawText(ctx,c,W,H)}
+   const nf=new VideoFrame(cv,{timestamp:Math.round((base+t-seg.s)*1e6),duration:f.duration||33333});enc.encode(nf,{keyFrame:nF++%60===0});nf.close();
+   const d=done+t-seg.s,el=(performance.now()-t0)/1000;prog.value=d/total;if(nF%15===0&&el>1)$("exEta").textContent=`${(d/el).toFixed(1)}× real time · about ${mm(Math.max(0,(total-d)/(d/el)))} left`}}finally{f.close()}},error:e=>{err=e}});
+ dec.configure(dcfg);
+ const vs=M.vs,ts=M.vts;
+ for(let k=0;k<segs.length&&!exCancel;k++){seg=segs[k];msg(`Exporting clip ${k+1} of ${segs.length}: ${seg.clips[0].r}`);
+  let i0=vs.findIndex(x=>x.cts/ts>=seg.s);if(i0<0)continue;while(i0>0&&!vs[i0].is_sync)i0--;
+  let i1=i0;while(i1<vs.length&&vs[i1].dts/ts<seg.e+0.5)i1++;
+  const aS=M.A?M.A.ss.filter(x=>x.cts/M.A.ts>=seg.s&&x.cts/M.A.ts<seg.e):[];
+  let lo=Infinity,hi=0;for(let i=i0;i<i1;i++){lo=Math.min(lo,vs[i].offset);hi=Math.max(hi,vs[i].offset+vs[i].size)}for(const x of aS){lo=Math.min(lo,x.offset);hi=Math.max(hi,x.offset+x.size)}
+  const data=new Uint8Array(await rng(lo,hi-1));
+  for(let i=i0;i<i1&&!exCancel&&!err;i++){const x=vs[i];while(dec.decodeQueueSize>8||enc.encodeQueueSize>8)await new Promise(r=>setTimeout(r,1));
+   dec.decode(new EncodedVideoChunk({type:x.is_sync?"key":"delta",timestamp:Math.round(x.cts/ts*1e6),duration:Math.round(x.duration/ts*1e6),data:data.subarray(x.offset-lo,x.offset-lo+x.size)}))}
+  await dec.flush();if(err)throw err;
+  for(const x of aS){mux.addAudioChunkRaw(data.slice(x.offset-lo,x.offset-lo+x.size),"key",Math.round((base+x.cts/M.A.ts-seg.s)*1e6),Math.round(x.duration/M.A.ts*1e6),aMeta?{decoderConfig:{codec:"mp4a.40.2",sampleRate:M.A.sr,numberOfChannels:M.A.ch,description:M.A.asc}}:undefined);aMeta=false}
+  base+=seg.e-seg.s;done+=seg.e-seg.s}
+ await enc.flush();if(err)throw err;dec.close();enc.close();if(exCancel)return null;
+ mux.finalize();return new Blob([tgt.buffer],{type:"video/mp4"})}
+const exName=(one,L,withText,ext)=>(one?`Jana_${L[0].r.replace(/\W+/g,"-")}_${mm(L[0].s).replace(/:/g,"-")}`:`Jana_Pyrgos_v_AO_Ag_Paraskevi_${L.length}_clips`)+(withText?"":"_no-text")+"."+ext;
+function exSave(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000)}
 $("exGo").onclick=async()=>{const one=document.querySelector('[name=exWhat]:checked').value==="one",withText=$("exText").checked;
  const L=one?[queue[qi]]:(queue.length&&qi>=0?queue:list()).slice();if(!L.length||!L[0])return;
- $("exSetup").hidden=true;$("exRun").hidden=false;$("exStop").hidden=false;$("exClose").hidden=true;exCancel=false;exBusy=true;
+ $("exSetup").hidden=true;$("exRun").hidden=false;$("exStop").hidden=false;$("exClose").hidden=true;exCancel=false;exBusy=true;$("exEta").textContent="";
+ const msg=t=>$("exMsg").textContent=t,prog=$("exProg");prog.value=0;
+ try{const blob=await fastExport(L,withText,msg,prog);
+  if(!blob){msg("Export cancelled.");return exEnd()}
+  const name=exName(one,L,withText,"mp4");exSave(blob,name);prog.value=1;$("exEta").textContent="";msg(`Done: ${name} (${(blob.size/1048576).toFixed(0)} MB) is in your downloads.`);return exEnd()}
+ catch(e){const m=e&&e.message;if(!["nowebcodecs","lib","range","moov"].includes(m)){msg("Export failed: "+(m||e)+". Try again, or use Chrome on a computer.");return exEnd()}
+  $("exEta").textContent="Fast export isn't available here, so this export runs in real time."}
+ realtimeExport(one,withText)};
+async function realtimeExport(one,withText){
+ const L=one?[queue[qi]]:(queue.length&&qi>=0?queue:list()).slice();
  const msg=t=>$("exMsg").textContent=t,prog=$("exProg");prog.value=0;
  const types=["video/mp4;codecs=avc1.42E01F,mp4a.40.2","video/mp4;codecs=avc1,mp4a","video/mp4","video/webm;codecs=vp9,opus","video/webm"];
  const mime=window.MediaRecorder&&types.find(t=>MediaRecorder.isTypeSupported(t));
