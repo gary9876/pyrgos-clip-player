@@ -145,7 +145,7 @@ const KO0=["IP","AT","OOP","DT","ASP","DSP","Other"],tk0=r=>{let k=KO0.indexOf(k
 let ROWS=[];const mkRows=()=>{ROWS=[...new Set(CL.map(c=>c.r))].sort((a,b)=>SET==="team"?CL.findIndex(c=>c.r===a)-CL.findIndex(c=>c.r===b):tk0(a)-tk0(b))};
 const sel=new Set();let ordPick=false,showText=true;let queue=[],qi=-1,playing=false;
 const mm=t=>{t=Math.max(0,t);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60);return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(s).padStart(2,"0")};
-const TCOL=r=>/^Pyrgos/.test(r)?"#2a8bd6":/^Volos/.test(r)?"#e0525a":"#93a19a";const col=r=>SET==="team"?TCOL(r):COL[kind(r)]||"#888";
+const TCOL=r=>/^Pyrgos/.test(r)?"#2a8bd6":/^Volos/.test(r)?"#c9cfcc":"#93a19a";const TTXT=r=>/^Pyrgos/.test(r)?"#4aa3ff":/^Volos/.test(r)?"#ffffff":"#93a19a";const col=r=>SET==="team"?TCOL(r):COL[kind(r)]||"#888";
 const adjKey=()=>MID==="par"&&SET==="jana"?"clipAdj":`clipAdj_${MID}_${SET}`;let adj={};const loadAdj=()=>{adj={};try{adj=JSON.parse(localStorage.getItem(adjKey())||"{}")}catch(e){}};
 const saveAdj=()=>{try{localStorage.setItem(adjKey(),JSON.stringify(adj))}catch(e){}};
 let order="time";const KO=["IP","AT","OOP","DT","ASP","DSP","Other"];
@@ -177,7 +177,7 @@ function updateNow(force){if(!showText||!playing||qi<0){$("now").hidden=true;now
  const t=v.currentTime;let act=queue.filter(c=>t>=c.s-.05&&t<=c.e&&(order!=="tactical"||c.r===queue[qi].r));if(!act.length)act=[queue[qi]];
  const key=act.map(c=>c.i).join(",");if(key===nowKey&&!force)return;nowKey=key;
  cue.text=act.map(c=>"<b>"+vtt(c.r)+"</b>"+(c.n?" — "+vtt(c.n):"")).join("\n");
- $("now").hidden=false;$("now").innerHTML=act.map(c=>`<div style="--c:${gc(c.r)}"><b>${c.r}</b>${c.n?" — "+esc(c.n):""}</div>`).join("")}
+ $("now").hidden=false;$("now").innerHTML=act.map(c=>`<div style="--c:${SET==="team"?TTXT(c.r):gc(c.r)}"><b>${c.r}</b>${c.n?" — "+esc(c.n):""}</div>`).join("")}
 function advance(){const t=v.currentTime,lead=+$("pre").value;let k=qi+1;
  const same=c=>order==="time"||c.r===queue[qi].r;
  while(k<queue.length&&queue[k].e<=t&&same(queue[k]))k++;               // fully covered by footage already played
@@ -288,9 +288,9 @@ function drawText(ctx,c,W,H){const fs=Math.round(H*0.036),pad=fs*.55,maxW=W*.58,
  const head=c.r+(c.n?" — ":"");ctx.font=`600 ${fs}px Barlow, Arial, sans-serif`;
  const lines=wrapLines(ctx,head+(c.n||""),maxW-pad*2);const lh=fs*1.25,bh=lines.length*lh+pad*1.6,bw=Math.min(maxW,Math.max(...lines.map(l=>ctx.measureText(l).width))+pad*2+6),y=H-H*.05-bh;
  ctx.fillStyle="rgba(10,12,11,.8)";ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,bw,bh,fs*.3):ctx.rect(x,y,bw,bh);ctx.fill();
- ctx.fillStyle=gc(c.r);ctx.fillRect(x,y,Math.max(4,fs*.18),bh);
+ ctx.fillStyle=(SET==="team"?TTXT(c.r):gc(c.r));ctx.fillRect(x,y,Math.max(4,fs*.18),bh);
  let rem=head.length;lines.forEach((l,i)=>{let tx=x+pad+6;const ty=y+pad*.8+lh*i+fs;
-  if(rem>0){const a=l.slice(0,rem);ctx.font=`700 ${fs}px Barlow, Arial, sans-serif`;ctx.fillStyle=gc(c.r);ctx.fillText(a,tx,ty);tx+=ctx.measureText(a).width;rem-=a.length+1;l=l.slice(a.length)}
+  if(rem>0){const a=l.slice(0,rem);ctx.font=`700 ${fs}px Barlow, Arial, sans-serif`;ctx.fillStyle=(SET==="team"?TTXT(c.r):gc(c.r));ctx.fillText(a,tx,ty);tx+=ctx.measureText(a).width;rem-=a.length+1;l=l.slice(a.length)}
   ctx.font=`500 ${fs}px Barlow, Arial, sans-serif`;ctx.fillStyle="#fff";ctx.fillText(l,tx,ty)})}
 const once=(el,ev)=>new Promise((res,rej)=>{const ok=()=>{cl();res()},bad=()=>{cl();rej(new Error("video"))},cl=()=>{el.removeEventListener(ev,ok);el.removeEventListener("error",bad)};el.addEventListener(ev,ok);el.addEventListener("error",bad)});
 const loadJS=src=>new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`))return res();const e=document.createElement("script");e.src=src;e.onload=res;e.onerror=()=>rej(new Error("lib"));document.head.appendChild(e)});
