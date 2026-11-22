@@ -69,6 +69,11 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
 .vid:is(:fullscreen,.pfs) .tp .scrub{font-size:11px}.vid.touchfs .now{bottom:72px;max-width:48%}.vid:is(:fullscreen,.pfs) .now>div{padding:4px 8px}}
 .vid.pfs{height:100dvh;width:100%}.vid.pfs .vwrap,.vid.pfs video{width:100%;height:100%}
 body.pfsOn{overflow:hidden}
+.vid:is(:fullscreen,.pfs) #exBtn{display:none}
+#exDlg{border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);padding:18px 20px;max-width:440px;width:calc(100% - 32px)}#exDlg::backdrop{background:rgba(0,0,0,.55)}
+#exDlg h3{margin:0 0 12px;font-family:var(--display);text-transform:uppercase;letter-spacing:.06em}
+#exDlg label{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:15px}#exDlg .exTxt{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+#exDlg p{margin:12px 0}#exDlg progress{width:100%;height:12px;accent-color:var(--accent)}#exDlg .row{margin-top:12px}
 </style></head><body>
 <div class="wrap">
 <header><div><div class="score" style="font-size:.7em;margin-bottom:4px"><span>Jana Match Video Review</span></div><div class="comp">Greek Women's A1 · 2026/27 · Sun 15 Nov</div>
@@ -80,7 +85,7 @@ body.pfsOn{overflow:hidden}
   <div class="vid" id="vid">
    <div class="vwrap"><video id="v" controls controlslist="nofullscreen" playsinline preload="metadata"></video><div class="now" id="now" hidden></div><button id="fsBtn" title="Full screen" aria-label="Full screen">⛶ Full screen</button></div>
    <div class="tp" id="tp"><div class="scrub"><span id="tcur">0:00</span><input type="range" id="scrub" min="0" max="1" step="0.1" value="0" aria-label="Seek"><span id="tdur">0:00</span></div>
-    <button data-m="rew" title="Rewind">⏪ Rewind</button><button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
+    <button data-m="rew" title="Rewind">⏪ Rewind</button><button class="big" data-m="slowb" title="Slow motion backwards">◀ Slow-mo rewind</button><button data-c="prev" title="Previous clip">⏮ Prev clip</button><button data-m="toggle" id="tpPlay" title="Play / pause" style="min-width:90px">▶ Play</button><button data-c="next" title="Next clip">Next clip ⏭</button><button class="big" data-m="slowf" title="Slow motion forwards">Slow-mo forward ▶</button><button data-m="ff" title="Fast forward 2×">Fast forward ⏩</button><button id="exBtn" title="Save clips as a video file">⬇ Export MP4</button><button id="txt" aria-pressed="true" hidden>Text: On</button></div>
    <div class="fsbar" id="fsbar"><button id="fFull">Full match</button><button data-o="time" id="fOT">Game Order</button><button data-o="tactical" id="fOK">Tactical Order</button><button id="fTxt" aria-pressed="true">Text: On</button><button id="fExit">✕ Exit</button></div>
   </div>
   <div class="pad row" hidden>
@@ -98,6 +103,16 @@ body.pfsOn{overflow:hidden}
 </div>
   <div class="cats" style="margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)"><div class="row" id="quick"></div><div class="row" id="cats"></div></div>
 </div>
+<dialog id="exDlg"><form method="dialog" id="exForm">
+<h3>Export video</h3>
+<div id="exSetup"><label><input type="radio" name="exWhat" value="one" id="exOne"> <span id="exOneL">Current clip</span></label>
+<label><input type="radio" name="exWhat" value="all" checked> <span id="exAllL">All clips in the current list</span></label>
+<label class="exTxt"><input type="checkbox" id="exText" checked> Include clip text on the video</label>
+<p class="lbl">Export records in real time, so a 5-minute reel takes about 5 minutes. Keep this tab open and on screen while it runs.</p>
+<div class="row"><button type="button" class="primary" id="exGo">Start export</button><button value="cancel">Cancel</button></div></div>
+<div id="exRun" hidden><p id="exMsg">Preparing…</p><progress id="exProg" max="1" value="0"></progress>
+<div class="row"><button type="button" id="exStop">Cancel export</button><button value="close" id="exClose" hidden>Close</button></div></div>
+</form></dialog>
 <script>
 const CL=[{"r":"ASP - Good","s":871.7,"e":885.7,"n":"Good strike but this kickoff doesn’t make sense for your team. This is what good pressing teams do"},{"r":"IP - Good","s":884.0,"e":898.0,"n":"Clever pass, good creativity straight away"},{"r":"IP - Good","s":930.5,"e":944.5,"n":"Good idea again, good disguise on the pass\nEve not sharp enough"},{"r":"IP - Bad","s":945.5,"e":959.5,"n":"Too many touches, some passes need to be simple for you to be able to do the penetrating ones"},{"r":"OOP - Good","s":953.9,"e":973.2,"n":"Good defending but you’re still quite square, you’re giving her both sides\nStrong challenge"},{"r":"DT - Good","s":1107.2,"e":1121.2,"n":"Good reaction and pace"},{"r":"IP - Good","s":1162.8,"e":1176.8,"n":""},{"r":"DT - Bad","s":1165.3,"e":1179.3,"n":"Didn’t need to try and win it, just force it backwards so she can’t turn"},{"r":"Other","s":1205.1,"e":1235.1,"n":"Bad defending and goalkeeping"},{"r":"DSP - Good","s":1216.2,"e":1230.2,"n":"Good clearance under pressure"},{"r":"OOP - Good","s":1303.3,"e":1317.3,"n":"Really good decision to drop here"},{"r":"OOP - Good","s":1327.5,"e":1341.5,"n":"Good angle to the press"},{"r":"IP - Good","s":1362.8,"e":1376.8,"n":"Great run into the box, terrible from her"},{"r":"IP - Good","s":1477.4,"e":1491.4,"n":"Good idea to play this on one, she defended well"},{"r":"IP - Bad","s":1498.9,"e":1512.9,"n":"Either this was a bad decision or bad execution but it wasn’t on"},{"r":"OOP - Good","s":1517.5,"e":1531.5,"n":"Good recovery"},{"r":"OOP - Bad","s":1524.8,"e":1538.8,"n":"Didn’t need to dive in here"},{"r":"OOP - Good","s":1639.9,"e":1653.9,"n":"Good pressure here"},{"r":"OOP - Bad","s":1681.3,"e":1695.3,"n":"No reason to stick your arm out here, the danger isn’t worth getting yellow carded"},{"r":"Other","s":1683.8,"e":1713.8,"n":"TERRIBLE defending and AWFUL goalkeeping"},{"r":"ASP - Good","s":1740.5,"e":1754.5,"n":"This is better going this side, it’s more dangerous with your right"},{"r":"OOP - Good","s":1754.4,"e":1768.4,"n":"Good aggression, teammte should win this"},{"r":"IP - Good","s":1789.6,"e":1807.0,"n":"Great movement, 1st and 2nd touch and excellent finish"},{"r":"IP - Good","s":1906.1,"e":1920.1,"n":"Great run again, if you could’ve got it out of your feet faster  on 1st touch you couldve shot or crossed"},{"r":"ASP - Good","s":1946.3,"e":1960.3,"n":"Obviously this is your job but taking you out of the middle and kicking it straight to the GK is just stupid"},{"r":"IP - Good","s":1968.2,"e":1982.2,"n":"This is a good 2nd movement once you see its going over you"},{"r":"OOP - Good","s":2076.4,"e":2090.4,"n":""},{"r":"OOP - Good","s":2133.5,"e":2147.5,"n":""},{"r":"Other","s":2198.7,"e":2228.7,"n":"Your right back often does this, has no idea where here player is"},{"r":"IP - Good","s":2230.6,"e":2244.6,"n":"Good movement again"},{"r":"IP - Bad","s":2300.7,"e":2314.7,"n":"Very difficult but could you aim the header better, or let it run across you for the winger?"},{"r":"IP - Good","s":2320.7,"e":2334.7,"n":"1st time dropping in the game, good timing"},{"r":"OOP - Good","s":2376.4,"e":2390.4,"n":"Good pressure"},{"r":"IP - Good","s":2426.9,"e":2447.4,"n":"This is fine, but you’re actually in a lot of space here. Could you turn and play? \nGood pace on this pass, she should take a touch and cross"},{"r":"OOP - Good","s":2509.4,"e":2523.4,"n":"Good challenge"},{"r":"IP - Good","s":2545.1,"e":2559.1,"n":"These passes are the little things that open up the game that people don’t notice"},{"r":"OOP - Good","s":2558.0,"e":2572.0,"n":"Good pressure"},{"r":"IP - Good","s":2602.8,"e":2616.8,"n":"Good block"},{"r":"IP - Good","s":2662.2,"e":2676.2,"n":""},{"r":"IP - Good","s":2715.3,"e":2729.3,"n":"clever pass"},{"r":"Other","s":2750.8,"e":2780.8,"n":"What a terrible dive"},{"r":"IP - Good","s":2880.5,"e":2894.5,"n":"Good run and carrying on to press"},{"r":"IP - Good","s":2930.9,"e":2955.2,"n":"I can tell you have no options at all"},{"r":"IP - Good","s":2967.2,"e":2981.2,"n":""},{"r":"IP - Good","s":2989.1,"e":3012.5,"n":""},{"r":"OOP - Good","s":3063.4,"e":3077.4,"n":""},{"r":"IP - Good","s":3100.5,"e":3114.5,"n":"Opening up the pitch well"},{"r":"IP - Good","s":3162.0,"e":3178.2,"n":"nice play between the lines\nAnother good run into the box"},{"r":"IP - Good","s":3206.8,"e":3220.8,"n":"This first touch is great, makes the pass easy to open up"},{"r":"Other","s":3402.1,"e":3432.1,"n":"How does she lose this?"},{"r":"OOP - Good","s":3587.9,"e":3601.9,"n":"Good recovery, these little runs really help"},{"r":"OOP - Good","s":4727.9,"e":4741.9,"n":"Always good to put someone on the floor"},{"r":"IP - Good","s":4760.2,"e":4774.2,"n":""},{"r":"IP - Good","s":4911.2,"e":4925.2,"n":"Awkward bounce, not much you can do, plus bad pass"},{"r":"Other","s":5213.4,"e":5243.4,"n":"Terrible defending by the centre backs and right back"},{"r":"ASP - Good","s":5279.6,"e":5303.8,"n":"Much better, just do this every time\nCould you shoot?"},{"r":"IP - Good","s":5443.4,"e":5457.4,"n":"Looks like this was good"},{"r":"IP - Good","s":5682.3,"e":5696.3,"n":"Good control anyway"},{"r":"IP - Good","s":5737.8,"e":5751.8,"n":"Good control again"},{"r":"IP - Good","s":5840.5,"e":5854.5,"n":"Good timing into the box again"},{"r":"IP - Good","s":5995.9,"e":6009.9,"n":"This looks poor by her?"},{"r":"IP - Bad","s":6019.3,"e":6033.3,"n":"bad touch"},{"r":"OOP - Good","s":6185.3,"e":6199.3,"n":"Good scanning"},{"r":"IP - Good","s":6295.9,"e":6311.7,"n":"This is really nice skill and great strength\nIts a good cross but could you get your head up to see no one is there?"},{"r":"IP - Bad","s":6447,"e":6461,"n":"The ball isn’t in the right position to shoot from here. Its to the side of you not in front so its very difficult to get your foot around it \nFirst or second touch should be forward"},{"r":"IP - Good","s":6512.5,"e":6526.5,"n":"This is excellent 9 play"},{"r":"OOP - Good","s":6567.9,"e":6581.9,"n":""},{"r":"IP - Good","s":6621.4,"e":6635.4,"n":"Nice no look pass"},{"r":"IP - Good","s":6759.8,"e":6773.8,"n":"Good set back"},{"r":"OOP - Good","s":6778.3,"e":6798.5,"n":"Good change of angle at the end and great idea for a pass"},{"r":"Other","s":6907.5,"e":6937.5,"n":""},{"r":"IP - Good","s":7133.4,"e":7149.0,"n":"Really good pass on first touch like this and good breaking into the box"},{"r":"IP - Good","s":7290.8,"e":7320.3,"n":"Good demanding here\nGreat switch and breaking into box (getting good at this)"},{"r":"OOP - Good","s":7359.7,"e":7373.7,"n":"Good pace and decision to pull out"},{"r":"IP - Good","s":7413.3,"e":7427.3,"n":"Good strength under pressure"},{"r":"IP - Bad","s":7613.3,"e":7630.4,"n":"Not the best option even if you didn’t slip"}];
 const COL={IP:"#2a8bd6",OOP:"#d97a1f",ASP:"#8a5bd6",DSP:"#14a5a0",DT:"#d6a21f",Other:"#8a948f"};
@@ -217,4 +232,56 @@ $("off").onchange=e=>{const n=parseFloat(e.target.value);if(!isNaN(n))setOff(n)}
 $("kick").onclick=()=>setOff(v.currentTime-CL[0].s);
 
 ROWS.forEach(r=>sel.add(r));ordPick=true;order="time";setOff(OFF);show();$("evt").textContent="Use the buttons above to watch the full match or the clips.";
+// ---- Export MP4 (records the clips in real time onto a canvas) ----
+const exD=$("exDlg");let exCancel=false,exBusy=false;
+$("exBtn").onclick=()=>{const L=queue.length&&qi>=0?queue:list(),cur=queue[qi],dur=L.reduce((a,c)=>a+Math.max(0,c.e-c.s),0);
+ $("exOne").disabled=!cur;$("exOneL").textContent=cur?`Current clip (${cur.r}, ${mm(cur.e-cur.s)})`:"Current clip (play a clip first)";
+ $("exAllL").textContent=`All clips in the current list (${L.length} clips, about ${Math.max(1,Math.round(dur/60))} min)`;
+ document.querySelector('[name=exWhat][value=all]').checked=true;$("exSetup").hidden=false;$("exRun").hidden=true;
+ if(!v.paused)v.pause();exD.showModal()};
+$("exStop").onclick=()=>{exCancel=true};
+exD.addEventListener("cancel",e=>{if(exBusy)e.preventDefault()});
+function wrapLines(ctx,text,maxW){const out=[];for(const para of text.split("\n")){let line="";for(const w of para.split(/\s+/)){if(!w)continue;const t=line?line+" "+w:w;if(ctx.measureText(t).width>maxW&&line){out.push(line);line=w}else line=t}if(line)out.push(line)}return out}
+function drawText(ctx,c,W,H){const fs=Math.round(H*0.036),pad=fs*.55,maxW=W*.58,x=W*.025;
+ const head=c.r+(c.n?" — ":"");ctx.font=`600 ${fs}px Barlow, Arial, sans-serif`;
+ const lines=wrapLines(ctx,head+(c.n||""),maxW-pad*2);const lh=fs*1.25,bh=lines.length*lh+pad*1.6,bw=Math.min(maxW,Math.max(...lines.map(l=>ctx.measureText(l).width))+pad*2+6),y=H-H*.05-bh;
+ ctx.fillStyle="rgba(10,12,11,.8)";ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,bw,bh,fs*.3):ctx.rect(x,y,bw,bh);ctx.fill();
+ ctx.fillStyle=gc(c.r);ctx.fillRect(x,y,Math.max(4,fs*.18),bh);
+ let rem=head.length;lines.forEach((l,i)=>{let tx=x+pad+6;const ty=y+pad*.8+lh*i+fs;
+  if(rem>0){const a=l.slice(0,rem);ctx.font=`700 ${fs}px Barlow, Arial, sans-serif`;ctx.fillStyle=gc(c.r);ctx.fillText(a,tx,ty);tx+=ctx.measureText(a).width;rem-=a.length+1;l=l.slice(a.length)}
+  ctx.font=`500 ${fs}px Barlow, Arial, sans-serif`;ctx.fillStyle="#fff";ctx.fillText(l,tx,ty)})}
+const once=(el,ev)=>new Promise((res,rej)=>{const ok=()=>{cl();res()},bad=()=>{cl();rej(new Error("video"))},cl=()=>{el.removeEventListener(ev,ok);el.removeEventListener("error",bad)};el.addEventListener(ev,ok);el.addEventListener("error",bad)});
+$("exGo").onclick=async()=>{const one=document.querySelector('[name=exWhat]:checked').value==="one",withText=$("exText").checked;
+ const L=one?[queue[qi]]:(queue.length&&qi>=0?queue:list()).slice();if(!L.length||!L[0])return;
+ $("exSetup").hidden=true;$("exRun").hidden=false;$("exStop").hidden=false;$("exClose").hidden=true;exCancel=false;exBusy=true;
+ const msg=t=>$("exMsg").textContent=t,prog=$("exProg");prog.value=0;
+ const types=["video/mp4;codecs=avc1.42E01F,mp4a.40.2","video/mp4;codecs=avc1,mp4a","video/mp4","video/webm;codecs=vp9,opus","video/webm"];
+ const mime=window.MediaRecorder&&types.find(t=>MediaRecorder.isTypeSupported(t));
+ if(!mime||!HTMLCanvasElement.prototype.captureStream){msg("This browser can't export video. Please use Chrome or Edge on a computer.");return exEnd()}
+ const ev=document.createElement("video");ev.crossOrigin="anonymous";ev.playsInline=true;ev.preload="auto";ev.src=v.currentSrc||v.src;
+ let ac,rec,raf,chunks=[];
+ try{msg("Loading video…");await once(ev,"loadedmetadata");
+  const W=1280,H=Math.round(1280*ev.videoHeight/ev.videoWidth)||720,cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
+  let curC=L[0];const draw=()=>{ctx.drawImage(ev,0,0,W,H);if(withText&&curC)drawText(ctx,curC,W,H);raf=requestAnimationFrame(draw)};
+  const stream=cv.captureStream(30);
+  try{ac=new (window.AudioContext||window.webkitAudioContext)();const src=ac.createMediaElementSource(ev),dst=ac.createMediaStreamDestination();src.connect(dst);dst.stream.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){}
+  rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:5e6});rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  const total=L.reduce((a,c)=>a+(c.e-c.s),0);let done=0;draw();
+  for(let k=0;k<L.length&&!exCancel;k++){const c=L[k];curC=c;msg(`Recording clip ${k+1} of ${L.length}: ${c.r}`);
+   ev.currentTime=c.s;await once(ev,"seeked");await new Promise(r=>setTimeout(r,120));
+   if(rec.state==="inactive")rec.start(1000);else rec.resume();await ev.play();
+   await new Promise(res=>{const t=setInterval(()=>{prog.value=(done+Math.max(0,ev.currentTime-c.s))/total;if(ev.currentTime>=c.e||ev.ended||exCancel){clearInterval(t);res()}},50)});
+   ev.pause();rec.pause();done+=c.e-c.s}
+  cancelAnimationFrame(raf);
+  if(exCancel){rec.stop();msg("Export cancelled.");return exEnd()}
+  await new Promise(r=>{rec.onstop=r;rec.stop()});
+  const ext=mime.startsWith("video/mp4")?"mp4":"webm",blob=new Blob(chunks,{type:mime.split(";")[0]});
+  const name=(one?`Jana_${L[0].r.replace(/\W+/g,"-")}_${mm(L[0].s).replace(/:/g,"-")}`:`Jana_Pyrgos_v_AO_Ag_Paraskevi_${L.length}_clips`)+(withText?"":"_no-text")+"."+ext;
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+  prog.value=1;msg(`Done: ${name} (${(blob.size/1048576).toFixed(0)} MB) is in your downloads.`+(ext==="webm"?" This browser can only save WebM, which plays in Chrome and VLC.":""))}
+ catch(e){cancelAnimationFrame(raf);try{rec&&rec.state!=="inactive"&&rec.stop()}catch(_){}
+  msg(e.message==="video"?"The video couldn't be loaded for export. Check your connection and try again.":"Export failed: "+(e.message||e))}
+ finally{try{ev.pause();ev.removeAttribute("src");ev.load()}catch(_){}try{ac&&ac.close()}catch(_){}}
+ exEnd()};
+function exEnd(){exBusy=false;$("exStop").hidden=true;$("exClose").hidden=false}
 </script></body></html>
